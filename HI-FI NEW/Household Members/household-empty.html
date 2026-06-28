@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ODH · Household Members — Empty / add</title>
+
+<link rel="stylesheet" href="../../design-kit/tokens.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     HOUSEHOLD MEMBERS OF A MINOR — empty / add-a-member.
+     The entry point: lead with the add form as the focal mass;
+     a quiet placeholder shows where people will appear.
+     Same system, type, depth scale + primary-blue anchor as the
+     rest of the screens.
+     ============================================================ */
+
+  :root {
+    --ms2-display: 'Cal Sans', 'Sora', system-ui, sans-serif;
+    --ms2-body:    'DM Sans', system-ui, sans-serif;
+    --ms2-mono:    'DM Mono', ui-monospace, monospace;
+    --ms2-text-strong: #3b3d44;
+    --ms2-text-soft:   #595b63;
+    --ms2-lift-1: 0 1px 2px rgba(19,19,24,.05), 0 10px 22px -12px rgba(19,19,24,.18);
+    --ms2-lift-2: 0 5px 12px -4px rgba(19,19,24,.10), 0 22px 46px -20px rgba(19,19,24,.28);
+    --ms2-focal:  0 4px 14px -4px rgba(19,19,24,.16), 0 42px 84px -42px rgba(19,19,24,.42);
+    --ms2-focal-glow: 0 20px 54px -26px color-mix(in srgb, var(--action) 52%, transparent);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    font-family: var(--ms2-body); font-size: 17px; line-height: 1.55; color: var(--text);
+    min-height: 100vh;
+    background:
+      radial-gradient(1100px 640px at 14% -12%, rgba(0,174,255,.11), transparent 58%),
+      radial-gradient(960px 520px at 88% -10%, rgba(2,132,199,.08), transparent 56%),
+      radial-gradient(820px 600px at 50% 8%, rgba(56,189,248,.05), transparent 64%),
+      #eef1f6;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
+  svg { display: block; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  /* ---- App bar ------------------------------------------------- */
+  .ms2-bar {
+    position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.7);
+    backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid rgba(19,19,24,.07);
+  }
+  .ms2-bar-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 30px; height: 66px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .ms2-brand { display: flex; align-items: center; gap: 11px; }
+  .ms2-mark {
+    width: 32px; height: 32px; border-radius: 9px; background: var(--grad); display: grid; place-items: center;
+    box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--action) 55%, transparent);
+  }
+  .ms2-wordmark { font-family: var(--ms2-display); font-size: 22px; letter-spacing: .01em; color: var(--text); }
+  .ms2-bar-right { display: flex; align-items: center; gap: 14px; }
+  .ms2-help {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 15px; color: var(--ms2-text-soft);
+    font-weight: 500; padding: 8px 10px; border-radius: 9px; transition: background .15s var(--ease), color .15s var(--ease);
+  }
+  .ms2-help:hover { background: var(--surface-sunk); color: var(--text); }
+  .ms2-help svg { width: 17px; height: 17px; }
+  .ms2-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--text); color: #fff;
+    display: grid; place-items: center; font-size: 13px; font-weight: 600; letter-spacing: .02em;
+  }
+
+  /* ---- Page shell --------------------------------------------- */
+  .ms2-page { max-width: 1200px; margin: 0 auto; padding: 36px 30px 92px; }
+  .ms2-back {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 14.5px; font-weight: 600;
+    color: var(--accent); margin-bottom: 22px; transition: color .15s var(--ease);
+  }
+  .ms2-back:hover { color: var(--accent-hover); }
+  .ms2-back svg { width: 16px; height: 16px; }
+  .ms2-eyebrow {
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .18em;
+    font-weight: 600; font-size: 13px; color: var(--ms2-text-soft); margin-bottom: 16px;
+  }
+  .ms2-h1 { font-family: var(--ms2-display); font-weight: 400; font-size: 52px; line-height: 1;
+    letter-spacing: -.01em; color: var(--text); }
+  .ms2-lede { font-size: 19px; line-height: 1.55; color: var(--ms2-text-strong); max-width: 60ch; margin-top: 18px; }
+  .ms2-lede b { color: var(--text); font-weight: 600; }
+  .ms2-reassure {
+    display: inline-flex; align-items: center; gap: 9px;
+    margin-top: 18px; font-size: 15px; font-weight: 500; color: #474a52;
+  }
+  .ms2-reassure svg { width: 17px; height: 17px; }
+
+  /* primary blue button — the colour anchor */
+  .ms2-btn {
+    display: inline-flex; align-items: center; gap: 7px; height: 48px; padding: 0 20px; border-radius: 11px;
+    border: 1px solid transparent; font-family: var(--ms2-body); font-size: 16px; font-weight: 600;
+    background: var(--grad-action); color: #fff;
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--action) 58%, transparent);
+    transition: filter .15s var(--ease), transform .05s var(--ease);
+  }
+  .ms2-btn:hover { filter: brightness(1.07); }
+  .ms2-btn:active { transform: translateY(.5px); }
+  .ms2-btn svg { width: 17px; height: 17px; }
+  .ms2-learn {
+    display: inline-flex; align-items: center; gap: 5px; color: var(--accent); font-size: 15px; font-weight: 600;
+    transition: color .15s var(--ease);
+  }
+  .ms2-learn:hover { color: var(--accent-hover); text-decoration: underline; }
+  .ms2-learn svg { width: 15px; height: 15px; }
+
+  /* ============================================================
+     ADD-MEMBER CARD — the focal mass on the empty state.
+     ============================================================ */
+  .ms2-addcard {
+    position: relative; margin-top: 30px; border-radius: 22px; overflow: hidden;
+    background:
+      radial-gradient(760px 240px at 0% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 66%),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+    box-shadow: var(--ms2-focal), var(--ms2-focal-glow);
+    padding: 30px 36px 34px;
+  }
+  .ms2-addcard-tag {
+    display: inline-flex; align-items: center; gap: 7px; font-family: var(--ms2-body);
+    text-transform: uppercase; letter-spacing: .12em; font-weight: 700; font-size: 12px; color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .ms2-addcard-tag svg { width: 14px; height: 14px; }
+  .ms2-addcard-q { font-family: var(--ms2-display); font-weight: 400; font-size: 30px; line-height: 1.06;
+    letter-spacing: -.01em; color: var(--text); }
+  .ms2-addcard-sub { color: var(--ms2-text-strong); font-size: 16px; margin-top: 11px; max-width: 60ch; }
+
+  /* form */
+  .ms2-form { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-top: 24px; }
+  .ms2-field { display: flex; flex-direction: column; gap: 8px; }
+  .ms2-field--rel { width: 264px; }
+  .ms2-field--name { flex: 1 1 240px; min-width: 220px; }
+  .ms2-field-label {
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .1em;
+    font-weight: 600; font-size: 11px; color: var(--ms2-text-soft);
+  }
+  .ms2-input, .ms2-select {
+    height: 48px; width: 100%; padding: 0 15px; border-radius: 11px;
+    border: 1px solid var(--border-strong); background: var(--surface);
+    font-family: var(--ms2-body); font-size: 16px; color: var(--text);
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+  }
+  .ms2-input::placeholder { color: var(--text-faint); }
+  .ms2-input:focus, .ms2-select:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+  .ms2-select-wrap { position: relative; }
+  .ms2-select { appearance: none; -webkit-appearance: none; padding-right: 40px; cursor: pointer; }
+  .ms2-select[data-empty] { color: var(--text-faint); }
+  .ms2-select-chev { position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--ms2-text-soft); }
+  .ms2-select-chev svg { width: 18px; height: 18px; }
+
+  /* quiet placeholder — where members will appear */
+  .ms2-empty {
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
+    margin-top: 22px; padding: 44px 24px; border-radius: 18px;
+    border: 1px dashed var(--text-faint); background: rgba(255,255,255,.45);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .ms2-empty-icon {
+    width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--surface-sunk); color: var(--ms2-text-soft); border: 1px solid var(--border); margin-bottom: 6px;
+  }
+  .ms2-empty-icon svg { width: 22px; height: 22px; }
+  .ms2-empty-title { font-family: var(--ms2-display); font-weight: 400; font-size: 20px; color: var(--text); }
+  .ms2-empty-text { font-size: 15px; color: var(--ms2-text-soft); max-width: 46ch; }
+
+  @media (max-width: 920px) {
+    .ms2-h1 { font-size: 40px; }
+    .ms2-form { gap: 14px; }
+    .ms2-field--rel, .ms2-field--name { width: 100%; flex: 1 1 100%; }
+    .ms2-form .ms2-btn { width: 100%; justify-content: center; }
+  }
+  @media (max-width: 560px) { .ms2-page { padding: 28px 20px 64px; } }
+</style>
+</head>
+<body>
+
+<header class="ms2-bar">
+  <div class="ms2-bar-inner">
+    <div class="ms2-brand">
+      <div class="ms2-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+      </div>
+      <span class="ms2-wordmark">ODH</span>
+    </div>
+    <div class="ms2-bar-right">
+      <a class="ms2-help" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 2-2.6 2.5-2.6 2.5"/><path d="M12 17h.01"/></svg>
+        How this works
+      </a>
+      <div class="ms2-avatar" title="Patient">PT</div>
+    </div>
+  </div>
+</header>
+
+<main class="ms2-page">
+
+  <a class="ms2-back" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    Main summary
+  </a>
+
+  <div class="ms2-eyebrow">Household members of a minor</div>
+  <h1 class="ms2-h1">Who works in the household?</h1>
+  <p class="ms2-lede">Add the adults who live with the child and have held a job — their work can carry
+    exposures that matter for the child's health. <b>Optional</b>, and you can add as many as apply.</p>
+  <div class="ms2-reassure">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+         stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    Saved automatically as you go — stop and pick up where you left off anytime.
+  </div>
+
+  <!-- FOCAL: add the first person -->
+  <section class="ms2-addcard" aria-labelledby="ms2-add-q">
+    <span class="ms2-addcard-tag">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+      Add someone
+    </span>
+    <h2 class="ms2-addcard-q" id="ms2-add-q">Add the first person.</h2>
+    <p class="ms2-addcard-sub">Pick how they're related to the child and give them a name to tell people
+      apart. You'll add their work next — we'll guide that part.</p>
+
+    <div class="ms2-form">
+      <div class="ms2-field ms2-field--rel">
+        <label class="ms2-field-label" for="rel">Relationship to the child</label>
+        <div class="ms2-select-wrap">
+          <select class="ms2-select" id="rel" data-empty>
+            <option value="" selected disabled hidden>Choose…</option>
+            <option>Mother</option>
+            <option>Father</option>
+            <option>Sibling</option>
+            <option>Grandparent</option>
+            <option>Aunt or uncle</option>
+            <option>Other adult</option>
+          </select>
+          <span class="ms2-select-chev">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
+        </div>
+      </div>
+      <div class="ms2-field ms2-field--name">
+        <label class="ms2-field-label" for="name">Their name</label>
+        <input class="ms2-input" id="name" type="text" placeholder="Optional — a name or nickname" />
+      </div>
+      <button class="ms2-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Add person
+      </button>
+    </div>
+  </section>
+
+  <!-- where members will appear -->
+  <div class="ms2-empty">
+    <div class="ms2-empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="ms2-empty-title">No one added yet</div>
+    <p class="ms2-empty-text">The people you add show up here — each with their own work history and exposures.</p>
+  </div>
+
+</main>
+
+</body>
+</html>
