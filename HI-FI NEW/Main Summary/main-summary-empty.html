@@ -31,6 +31,11 @@
     /* darker, higher-contrast greys than the kit's muted/faint, tuned by eye */
     --ms2-text-strong: #3b3d44;  /* body, descriptions, ledes */
     --ms2-text-soft:   #595b63;  /* labels, hints, footnotes */
+    /* elevation scale — a real z-hierarchy; boldness concentrated on the focal mass */
+    --ms2-lift-1: 0 1px 2px rgba(19,19,24,.05), 0 10px 22px -12px rgba(19,19,24,.18);
+    --ms2-lift-2: 0 5px 12px -4px rgba(19,19,24,.10), 0 22px 46px -20px rgba(19,19,24,.28);
+    --ms2-focal:  0 4px 14px -4px rgba(19,19,24,.16), 0 42px 84px -42px rgba(19,19,24,.42);
+    --ms2-focal-glow: 0 20px 54px -26px color-mix(in srgb, var(--action) 52%, transparent);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +43,12 @@
   body {
     font-family: var(--ms2-body);
     font-size: 17px; line-height: 1.55; color: var(--text);
-    min-height: 100vh; background: var(--bg-fog), var(--bg);
+    min-height: 100vh;
+    background:
+      radial-gradient(1100px 640px at 14% -12%, rgba(0,174,255,.11), transparent 58%),
+      radial-gradient(960px 520px at 88% -10%, rgba(2,132,199,.08), transparent 56%),
+      radial-gradient(820px 600px at 50% 8%, rgba(56,189,248,.05), transparent 64%),
+      #eef1f6;
   }
   a { color: inherit; text-decoration: none; }
   button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
@@ -98,16 +108,12 @@
   .ms2-anchor {
     position: relative; margin-top: 38px; overflow: hidden;
     border-radius: 22px;
+    /* the focal mass — deepest plane, blue wash + blue glow (no AI-tell spine) */
     background:
-      radial-gradient(680px 220px at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 64%),
+      radial-gradient(760px 240px at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 66%),
       var(--surface);
     border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
-    box-shadow:
-      0 2px 6px -2px color-mix(in srgb, var(--action) 24%, transparent),
-      0 30px 60px -34px color-mix(in srgb, var(--action) 40%, transparent);
-  }
-  .ms2-anchor::before {            /* the blue accent spine — this is the "needed" signal */
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad-action);
+    box-shadow: var(--ms2-focal), var(--ms2-focal-glow);
   }
   .ms2-anchor-in {
     display: grid; grid-template-columns: 1fr auto; gap: 38px; align-items: center;
@@ -168,13 +174,14 @@
 
   .ms2-card {
     display: flex; flex-direction: column;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-    padding: 22px 24px 18px; box-shadow: var(--shadow-card);
+    background: rgba(255,255,255,.74);
+    backdrop-filter: blur(10px) saturate(150%); -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid var(--border-strong); border-radius: 16px;
+    padding: 22px 24px 18px; box-shadow: var(--ms2-lift-1);
     transition: border-color .15s var(--ease), box-shadow .15s var(--ease), transform .12s var(--ease);
   }
   .ms2-card:hover {
-    border-color: var(--border-strong); transform: translateY(-2px);
-    box-shadow: 0 14px 34px -20px rgba(19,19,24,.24);
+    border-color: var(--text-faint); transform: translateY(-3px); box-shadow: var(--ms2-lift-2);
   }
   .ms2-pill {
     align-self: flex-start;
@@ -206,8 +213,9 @@
      "you must finish everything" pressure. Not a section: dashed + quiet. */
   .ms2-done {
     display: flex; flex-direction: column; justify-content: center;
-    border: 1px dashed var(--border-strong); border-radius: 16px;
-    padding: 24px; background: transparent;
+    border: 1px dashed var(--text-faint); border-radius: 16px;
+    padding: 24px; background: rgba(255,255,255,.5);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
   .ms2-done-icon {
     width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
