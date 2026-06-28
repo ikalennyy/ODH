@@ -1,0 +1,125 @@
+/* ============================================================
+   DESIGN KIT — tokens.css
+   The single recolor / re-tune surface.
+
+   Ported from the NIOCCS "V9 · Atmosphere · Open" system and
+   consolidated: every themeable value (palette, gradients,
+   fonts, shape, type scale, density) lives HERE so a new
+   program (e.g. ODH) re-skins by editing this file alone.
+   components.css references these tokens and contains no
+   hardcoded brand colors.
+
+   TO RE-SKIN FOR A NEW PROGRAM:
+     1. Swap the BRAND / ACCENT / ACTION block (and the two
+        gradients) to the new palette.
+     2. Optionally retune fonts + the type scale.
+     3. Leave components.css untouched.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@500;600;700;800&display=swap');
+
+:root {
+  /* ---- Fonts ------------------------------------------------ */
+  --font-display: 'Sora', system-ui, sans-serif;       /* headlines, page titles */
+  --font-sans:    'Geist', system-ui, sans-serif;      /* UI + body + buttons */
+  --font-mono:    'Geist Mono', ui-monospace, monospace;
+  --font-num:     'Geist Mono', ui-monospace, monospace; /* tabular numbers in tables */
+  --font-stat:    'Sora', system-ui, sans-serif;        /* the big KPI / metric numbers */
+  --font-hero:    'JetBrains Mono', ui-monospace, monospace; /* focal file/record name */
+
+  /* ---- Neutrals -------------------------------------------- */
+  --bg:            #f7f7f9;
+  --surface:       #ffffff;
+  --surface-2:     #fafafc;
+  --surface-sunk:  #eff0f4;
+  --border:        #e9e9ee;
+  --border-strong: #d9d9e0;
+  --text:          #131318;
+  --text-muted:    #63636e;
+  --text-faint:    #9697a3;
+
+  /* ---- Brand / accent / action ----------------------------------
+     A SINGLE sky-blue thread — ODH's signature #00AEFF, matched to the
+     portfolio case-study page. Two calibrations of the same blue:
+     --grad        = brand-mark gradient (brighter, portfolio sky); identity.
+     --grad-action = the ACTION gradient (deepened so white text holds
+                     contrast); every interactive "go" surface: primary
+                     button, selected KPI, progress fill, split control.
+     --accent      = solid blue for focus rings, links, hover borders
+                     (sky-600 — stays legible on white surfaces).
+     --action      = solid endpoint of the thread (live dots, derived
+                     shadows) — the literal #00AEFF signature.
+     Re-skin a program by shifting THIS ONE HUE.                  */
+  --grad:        linear-gradient(116deg, #0284c7 0%, #00aeff 58%, #38bdf8 100%);
+  --grad-action: linear-gradient(116deg, #075e8a 0%, #0284c7 48%, #0ea5e9 100%);
+  --accent:        #0284c7;
+  --accent-hover:  #0369a1;
+  --accent-on:     #ffffff;
+  --accent-weak:   #d6eefc;
+  --action:        #00aeff;
+
+  /* ---- Signals --------------------------------------------------
+     Flat, never gradient — signals must never shimmer. Tuned to the
+     ODH portfolio's red + orange accents.
+     alert = needs action now (red).  warn = uncertainty / low
+     confidence (orange/amber, distinct from alert).               */
+  --alert:         #dc2626;
+  --alert-weak:    #fdecea;
+  --alert-border:  #f4c6c0;
+  --warn:          #c2410c;
+  --warn-text:     #9a3412;
+  --warn-weak:     #fff2e0;
+  --warn-border:   #f6cfa1;
+
+  /* ---- Shape & elevation ----------------------------------- */
+  --radius-sm:   10px;
+  --radius:      14px;
+  --radius-lg:   18px;
+  --radius-pill: 999px;
+  --af-radius:   20px;   /* the focal hero panel */
+  --bw: 1px;
+
+  --shadow-card: 0 1px 2px rgba(19,19,24,.04);
+  --shadow-pop:  0 16px 44px -16px rgba(19,19,24,.20);
+  /* deeper, grounded shadow for the focal mass (active-file hero) */
+  --af-shadow:   0 3px 10px -3px rgba(19,19,24,.10), 0 30px 64px -34px rgba(19,19,24,.30);
+  --ring:        0 0 0 3px var(--accent-weak);
+
+  /* ---- Active-file hero accents (the sky-blue action thread) ---
+     Pulled out of the components so a re-skin can re-tint the
+     focal chip without touching layout. These are deliberately
+     action-hued (sky-blue here).                                 */
+  --af-bar-bg:     linear-gradient(180deg, #f4f4f6, #f1f1f1);
+  --af-bar-border: rgba(19,19,24,.12);
+  --chip-bg:       #dbe8f3;   /* the focal status pill */
+  --chip-text:     #21384a;
+  --chip-border:   #c1d6e6;
+
+  /* ---- Atmosphere -----------------------------------------------
+     Desaturated light pooling at the top of the page, then calm.
+     To re-skin: shift these tints toward the new accent hue (or
+     set --bg-fog: none for a flat background).                    */
+  --bg-fog:
+    radial-gradient(1000px 520px at 16% -12%, rgba(2, 132, 199, .075),  transparent 62%),
+    radial-gradient(900px 460px at 82% -14%, rgba(0, 174, 255, .06),    transparent 60%),
+    radial-gradient(760px 520px at 52% 4%,   rgba(56, 189, 248, .045),  transparent 65%);
+
+  /* ---- Type scale ------------------------------------------ */
+  --fs-base:   15px;
+  --fs-title:  40px;   /* page H1 */
+  --fs-stat:   48px;   /* KPI numbers */
+  --fs-file:   32px;   /* focal record / file name */
+  --fs-metric: 26px;   /* hero metric numbers */
+
+  /* ---- Density & motion ------------------------------------ */
+  --gap:       16px;
+  --row-h:     58px;
+  --pad-panel: 24px;
+  --maxw:      1320px;
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+
+/* Responsive type/density — keeps the big numbers from overflowing small screens */
+@media (max-width: 1080px) {
+  :root { --fs-title: 32px; --fs-stat: 40px; }
+}
