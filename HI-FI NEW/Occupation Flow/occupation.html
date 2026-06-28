@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ODH · Occupation Flow — Interactive</title>
+
+<link rel="stylesheet" href="../../design-kit/tokens.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     OCCUPATION FLOW — interactive guided general -> specific.
+     Built around the REAL problem: long occupation titles that
+     must be held + truncated. Grouping/spacing hierarchy, and a
+     prominent browsing-history panel.
+     ============================================================ */
+  :root {
+    --ms2-display: 'Cal Sans', 'Sora', system-ui, sans-serif;
+    --ms2-body:    'DM Sans', system-ui, sans-serif;
+    --ms2-mono:    'DM Mono', ui-monospace, monospace;
+    --ms2-text-strong: #3b3d44;
+    --ms2-text-soft:   #595b63;
+    --ms2-lift-1: 0 1px 2px rgba(19,19,24,.05), 0 10px 22px -12px rgba(19,19,24,.18);
+    --ms2-lift-2: 0 5px 12px -4px rgba(19,19,24,.10), 0 22px 46px -20px rgba(19,19,24,.28);
+    --ms2-focal:  0 4px 14px -4px rgba(19,19,24,.16), 0 42px 84px -42px rgba(19,19,24,.42);
+    --ms2-focal-glow: 0 20px 54px -26px color-mix(in srgb, var(--action) 52%, transparent);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    font-family: var(--ms2-body); font-size: 17px; line-height: 1.55; color: var(--text);
+    min-height: 100vh;
+    background:
+      radial-gradient(1100px 640px at 14% -12%, rgba(0,174,255,.11), transparent 58%),
+      radial-gradient(960px 520px at 88% -10%, rgba(2,132,199,.08), transparent 56%),
+      radial-gradient(820px 600px at 50% 8%, rgba(56,189,248,.05), transparent 64%),
+      #eef1f6;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
+  svg { display: block; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  /* ---- App bar ------------------------------------------------- */
+  .ms2-bar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.7);
+    backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid rgba(19,19,24,.07); }
+  .ms2-bar-inner { max-width: 1120px; margin: 0 auto; padding: 0 30px; height: 66px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .ms2-brand { display: flex; align-items: center; gap: 11px; }
+  .ms2-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--grad); display: grid; place-items: center;
+    box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--action) 55%, transparent); }
+  .ms2-wordmark { font-family: var(--ms2-display); font-size: 22px; letter-spacing: .01em; color: var(--text); }
+  .ms2-bar-right { display: flex; align-items: center; gap: 14px; }
+  .ms2-help { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; color: var(--ms2-text-soft);
+    font-weight: 500; padding: 8px 10px; border-radius: 9px; transition: background .15s var(--ease), color .15s var(--ease); }
+  .ms2-help:hover { background: var(--surface-sunk); color: var(--text); }
+  .ms2-help svg { width: 17px; height: 17px; }
+  .ms2-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--text); color: #fff;
+    display: grid; place-items: center; font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+
+  /* ---- Page shell --------------------------------------------- */
+  .ms2-page { max-width: 1120px; margin: 0 auto; padding: 32px 30px 96px; }
+  .ms2-crumbs { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--ms2-text-soft); margin-bottom: 22px; }
+  .ms2-crumbs a { color: var(--accent); font-weight: 600; }
+  .ms2-crumbs a:hover { text-decoration: underline; }
+  .ms2-crumbs svg { width: 15px; height: 15px; color: var(--text-faint); }
+  .ms2-crumbs .here { color: var(--text); font-weight: 600; }
+  .ms2-eyebrow { font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .18em;
+    font-weight: 600; font-size: 13px; color: var(--ms2-text-soft); margin-bottom: 14px; }
+  .ms2-h1 { font-family: var(--ms2-display); font-weight: 400; font-size: 48px; line-height: 1.02;
+    letter-spacing: -.01em; color: var(--text); }
+  .ms2-lede { font-size: 18px; line-height: 1.55; color: var(--ms2-text-strong); max-width: 56ch; margin-top: 16px; }
+
+  /* buttons / links ---------------------------------------------- */
+  .ms2-btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px; border-radius: 11px;
+    border: 1px solid var(--text-faint); background: var(--surface-sunk); color: var(--text);
+    font-family: var(--ms2-body); font-size: 15px; font-weight: 600;
+    transition: background .15s var(--ease), border-color .15s var(--ease), filter .15s var(--ease); }
+  .ms2-btn:hover { background: color-mix(in srgb, var(--surface-sunk) 88%, var(--text)); border-color: var(--text-muted); }
+  .ms2-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .ms2-btn svg { width: 17px; height: 17px; }
+  .ms2-btn--primary { background: var(--grad-action); color: #fff; border-color: transparent;
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--action) 58%, transparent); }
+  .ms2-btn--primary:hover { background: var(--grad-action); border-color: transparent; filter: brightness(1.07); }
+  .ms2-btn--primary:disabled { box-shadow: none; }
+  .ms2-ghost { font-size: 15px; font-weight: 600; color: var(--ms2-text-soft); }
+  .ms2-ghost:hover { color: var(--text); text-decoration: underline; }
+
+  /* ---- GROUP 1 · focal search panel ---------------------------- */
+  .ms2-search { position: relative; margin-top: 26px; border-radius: 22px; overflow: hidden;
+    background: radial-gradient(760px 240px at 0% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 66%), var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+    box-shadow: var(--ms2-focal), var(--ms2-focal-glow); padding: 30px 34px 32px; }
+  .ms2-search-label { font-family: var(--ms2-display); font-weight: 400; font-size: 26px; color: var(--text); letter-spacing: -.01em; }
+  .ms2-search-row { display: flex; gap: 12px; align-items: stretch; margin-top: 16px; flex-wrap: wrap; }
+  .ms2-searchfield { flex: 1 1 360px; min-width: 240px; position: relative; }
+  .ms2-searchfield svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 19px; height: 19px; color: var(--text-faint); }
+  .ms2-searchfield input { width: 100%; height: 54px; padding: 0 16px 0 46px; border-radius: 12px;
+    border: 1px solid var(--border-strong); background: var(--surface);
+    font-family: var(--ms2-body); font-size: 17px; color: var(--text);
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease); }
+  .ms2-searchfield input::placeholder { color: var(--text-faint); }
+  .ms2-searchfield input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+  .ms2-search .ms2-btn { height: 54px; padding: 0 24px; font-size: 16px; }
+  .ms2-search-hint { font-size: 14px; color: var(--ms2-text-soft); margin-top: 13px; }
+  .ms2-found { display: flex; align-items: center; gap: 13px; flex-wrap: wrap;
+    margin-top: 18px; padding: 16px 18px; border-radius: 14px;
+    background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
+  .ms2-found-ico { width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0; display: grid; place-items: center;
+    background: var(--grad); color: #fff; box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--action) 50%, transparent); }
+  .ms2-found-ico svg { width: 18px; height: 18px; }
+  .ms2-found-text { font-size: 15px; color: var(--ms2-text-strong); }
+  .ms2-found-text b { color: var(--text); font-weight: 700; }
+  .ms2-found .ms2-btn { margin-left: auto; }
+
+  /* ---- GROUP 2 · the choosing block (big gap from search) ------ */
+  .ms2-choose { margin-top: 46px; display: flex; flex-direction: column; gap: 14px; }
+  .ms2-choose-eyebrow { font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .16em;
+    font-weight: 700; font-size: 13px; color: var(--ms2-text-soft); margin-bottom: 2px; }
+
+  /* SIGNATURE — the narrowing path: guesswork -> a guided path, made visible */
+  .ms2-path { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 15px 20px; border-radius: 16px;
+    background: rgba(255,255,255,.66); backdrop-filter: blur(10px) saturate(150%); -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid var(--border-strong); box-shadow: var(--ms2-lift-1); font-size: 15px; }
+  .ms2-path-ico { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); flex-shrink: 0; }
+  .ms2-path-ico svg { width: 17px; height: 17px; }
+  .ms2-path-seg { font-weight: 600; color: var(--text); max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms2-path-seg--start { color: var(--ms2-text-strong); }
+  .ms2-path-seg--pending { color: var(--text-faint); font-weight: 500; }
+  .ms2-path-seg--dest { color: #fff; background: var(--grad-action); padding: 6px 14px; border-radius: 999px; font-weight: 700;
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--action) 55%, transparent); }
+  .ms2-path-arrow { display: inline-flex; color: var(--text-faint); }
+  .ms2-path-arrow svg { width: 16px; height: 16px; }
+
+  /* the one orchestrated motion — the narrowing reveal */
+  @keyframes ms2-reveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .ms2-reveal { animation: ms2-reveal .34s var(--ease) both; }
+  @media (prefers-reduced-motion: reduce) { .ms2-reveal { animation: none; } }
+
+  /* prominent browsing history */
+  .ms2-explore { border-radius: 18px; padding: 20px 22px;
+    background: color-mix(in srgb, var(--accent) 7%, rgba(255,255,255,.82));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); box-shadow: var(--ms2-lift-1); }
+  .ms2-explore-head { display: flex; align-items: flex-start; gap: 13px; margin-bottom: 14px; }
+  .ms2-explore-ic { width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0; display: grid; place-items: center;
+    background: var(--grad); color: #fff; box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--action) 50%, transparent); }
+  .ms2-explore-ic svg { width: 19px; height: 19px; }
+  .ms2-explore-title { font-family: var(--ms2-display); font-weight: 400; font-size: 19px; color: var(--text); }
+  .ms2-explore-hint { font-size: 14px; color: var(--ms2-text-soft); margin-top: 2px; }
+  .ms2-hist-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ms2-histchip { display: inline-flex; align-items: center; gap: 8px; max-width: 300px; padding: 9px 14px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--ms2-lift-1);
+    font-size: 14.5px; font-weight: 600; color: var(--text); cursor: pointer;
+    transition: border-color .14s var(--ease), transform .12s var(--ease), box-shadow .14s var(--ease); }
+  .ms2-histchip:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); box-shadow: var(--ms2-lift-2); }
+  .ms2-histchip-ic { display: inline-flex; color: var(--text-faint); flex-shrink: 0; }
+  .ms2-histchip-ic svg { width: 14px; height: 14px; }
+  .ms2-histchip-tx { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms2-histchip.is-active { background: var(--grad-action); color: #fff; border-color: transparent;
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--action) 55%, transparent); }
+  .ms2-histchip.is-active:hover { color: #fff; border-color: transparent; transform: translateY(-2px); }
+  .ms2-histchip.is-active .ms2-histchip-ic { color: rgba(255,255,255,.85); }
+
+  /* step panel */
+  .ms2-step { border-radius: 18px; padding: 24px 26px;
+    background: rgba(255,255,255,.74); backdrop-filter: blur(10px) saturate(150%); -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid var(--border-strong); box-shadow: var(--ms2-lift-1); }
+  .ms2-step-head { display: flex; align-items: center; gap: 13px; margin-bottom: 4px; }
+  .ms2-stepnum { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex-shrink: 0;
+    font-family: var(--ms2-display); font-size: 16px; color: #fff; background: var(--grad-action);
+    box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--action) 50%, transparent); }
+  .ms2-step-title { font-family: var(--ms2-display); font-weight: 400; font-size: 21px; color: var(--text); letter-spacing: -.005em; }
+  .ms2-step-hint { font-size: 14.5px; color: var(--ms2-text-soft); margin: 2px 0 16px 43px; }
+  .ms2-step-hint b { color: var(--ms2-text-strong); font-weight: 700; }
+  .ms2-step-count { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--ms2-text-soft);
+    background: var(--surface-sunk); border: 1px solid var(--border); padding: 4px 11px; border-radius: 999px; }
+
+  /* pagination — proves there are many (the reason for the two phases) */
+  .ms2-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--border); }
+  .ms2-pager-info { font-size: 14px; color: var(--ms2-text-soft); font-weight: 600; }
+  .ms2-pager-info b { color: var(--text); }
+  .ms2-pager-ctrls { display: flex; gap: 8px; }
+  .ms2-pgbtn { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+    font-family: var(--ms2-body); font-size: 14px; font-weight: 600;
+    transition: border-color .14s var(--ease), color .14s var(--ease), box-shadow .14s var(--ease); }
+  .ms2-pgbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); box-shadow: var(--ms2-lift-1); }
+  .ms2-pgbtn:disabled { opacity: .4; cursor: not-allowed; }
+  .ms2-pgbtn svg { width: 16px; height: 16px; }
+
+  .ms2-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 12px; }
+  .ms2-opt { position: relative; text-align: left; padding: 15px 38px 15px 16px; border-radius: 13px;
+    min-height: 98px; display: flex; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--ms2-lift-1);
+    font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.32; cursor: pointer;
+    transition: border-color .14s var(--ease), box-shadow .14s var(--ease), transform .12s var(--ease); }
+  .ms2-opt:hover { border-color: var(--text-faint); transform: translateY(-2px); box-shadow: var(--ms2-lift-2); }
+  .ms2-opt.is-selected { color: #fff; border-color: transparent; background: var(--grad-action);
+    box-shadow: var(--ms2-lift-2), var(--ms2-focal-glow); transform: translateY(-2px); }
+  .ms2-opt-label { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .ms2-opt-check { position: absolute; top: 12px; right: 12px; opacity: 0; }
+  .ms2-opt.is-selected .ms2-opt-check { opacity: 1; }
+  .ms2-opt-check svg { width: 16px; height: 16px; }
+
+  /* description for a chosen general */
+  .ms2-desc { margin-top: 14px; padding: 16px 18px; border-radius: 13px;
+    background: #f3f3f4; border: 1px solid var(--border); box-shadow: inset 0 1px 2px rgba(19,19,24,.04);
+    font-size: 15.5px; line-height: 1.5; }
+  .ms2-desc b { color: var(--text); font-weight: 700; }
+  .ms2-desc span { color: var(--ms2-text-strong); }
+
+  /* actions — the finish of the choosing block */
+  .ms2-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+  .ms2-actions .spacer { flex: 1 1 auto; }
+
+  /* manual entry */
+  .ms2-manual { margin-top: 6px; }
+  .ms2-manual input { width: 100%; height: 50px; padding: 0 16px; border-radius: 12px;
+    border: 1px solid var(--border-strong); background: var(--surface); font-family: var(--ms2-body); font-size: 16px; color: var(--text); }
+  .ms2-manual input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+
+  /* confirm + done */
+  .ms2-panel { position: relative; margin-top: 26px; border-radius: 22px; overflow: hidden; padding: 34px 36px 36px;
+    background: radial-gradient(760px 240px at 0% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 66%), var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border)); box-shadow: var(--ms2-focal), var(--ms2-focal-glow); }
+  .ms2-panel-tag { display: inline-flex; align-items: center; gap: 7px; font-family: var(--ms2-body);
+    text-transform: uppercase; letter-spacing: .12em; font-weight: 700; font-size: 12px; color: var(--accent); margin-bottom: 16px; }
+  .ms2-panel-tag svg { width: 15px; height: 15px; }
+  .ms2-pick-occ { font-family: var(--ms2-display); font-weight: 400; font-size: 32px; line-height: 1.08; letter-spacing: -.01em; color: var(--text); }
+  .ms2-pick-gen { font-size: 16px; color: var(--ms2-text-soft); margin-top: 10px; }
+  .ms2-pick-gen b { color: var(--text); font-weight: 600; }
+  .ms2-pick-desc { margin-top: 16px; padding: 16px 18px; border-radius: 13px; background: #f3f3f4; border: 1px solid var(--border);
+    font-size: 15.5px; line-height: 1.5; color: var(--ms2-text-strong); box-shadow: inset 0 1px 2px rgba(19,19,24,.04); }
+  .ms2-panel-foot { display: flex; align-items: center; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+  .ms2-success-ico { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 18px;
+    background: var(--grad); color: #fff; box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--action) 55%, transparent); }
+  .ms2-success-ico svg { width: 28px; height: 28px; }
+
+  @media (max-width: 760px) {
+    .ms2-h1 { font-size: 38px; }
+    .ms2-opts { grid-template-columns: 1fr 1fr; }
+    .ms2-found .ms2-btn { margin-left: 0; width: 100%; justify-content: center; }
+  }
+  @media (max-width: 520px) { .ms2-opts { grid-template-columns: 1fr; } .ms2-page { padding: 26px 20px 64px; } }
+</style>
+</head>
+<body>
+
+<header class="ms2-bar">
+  <div class="ms2-bar-inner">
+    <div class="ms2-brand">
+      <div class="ms2-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+      </div>
+      <span class="ms2-wordmark">ODH</span>
+    </div>
+    <div class="ms2-bar-right">
+      <a class="ms2-help" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+        stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 2-2.6 2.5-2.6 2.5"/><path d="M12 17h.01"/></svg>How this works</a>
+      <div class="ms2-avatar" title="Patient">PT</div>
+    </div>
+  </div>
+</header>
+
+<main class="ms2-page">
+  <nav class="ms2-crumbs">
+    <a href="#">Work history</a>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    <a href="#">Add a job</a>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    <span class="here">Find the occupation</span>
+  </nav>
+
+  <div class="ms2-eyebrow">Occupation</div>
+  <h1 class="ms2-h1">What's the job?</h1>
+  <p class="ms2-lede">Tell us roughly what the work is — even a plain word like “nurse.” We'll help you land on
+    the right industry and occupation, step by step, without needing the official terms.</p>
+
+  <div id="flow"></div>
+</main>
+
+<script>
+(function () {
+  var S = {
+    search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+    chev:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    back:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+    info:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+    hist:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>',
+    jump:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v3"/></svg>',
+    funnel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>'
+  };
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // ---- dataset: a "nurse" search, with the real long SOC-style titles ----
+  var GENERAL = [
+    { name:'Registered Nurses', desc:'Assess patients, develop and carry out nursing care plans, give medications and treatments, and teach patients and families how to manage illnesses and injuries.',
+      specifics:['Critical Care / Intensive Care Unit (ICU) Nurse','Emergency Department (ER) Registered Nurse','Operating Room / Perioperative Nurse','Pediatric Registered Nurse','Oncology Registered Nurse','Medical–Surgical Registered Nurse','Labor and Delivery / Obstetric Nurse','Home Health Registered Nurse','Cardiac / Telemetry Registered Nurse','Neonatal Intensive Care (NICU) Nurse','Public Health Registered Nurse','Dialysis / Nephrology Registered Nurse','Hospice and Palliative Care Nurse','Case Management Registered Nurse'] },
+    { name:'Nursing Instructors and Teachers, Postsecondary', desc:'Teach nursing courses at the college level, develop curriculum and materials, and supervise students in classroom and clinical settings.',
+      specifics:['Clinical Nursing Instructor','Nursing Program Faculty, Postsecondary','Continuing Education Instructor, Nursing','Simulation Lab Instructor'] },
+    { name:'Licensed Practical and Licensed Vocational Nurses', desc:'Provide basic nursing care — monitoring, comfort, wound care, and routine treatments — under the direction of registered nurses and physicians.',
+      specifics:['Long-Term Care Licensed Practical Nurse','Home Health Licensed Vocational Nurse','Outpatient Clinic LPN','Rehabilitation Facility LPN'] },
+    { name:'Nurse Practitioners', desc:'Diagnose and treat acute and chronic conditions, order and interpret tests, prescribe medication, and coordinate care — often as a primary provider.',
+      specifics:['Family Nurse Practitioner','Acute Care Nurse Practitioner','Psychiatric / Mental Health Nurse Practitioner','Pediatric Nurse Practitioner','Gerontology Nurse Practitioner'] },
+    { name:'Nursing Assistants', desc:'Help patients with bathing, dressing, eating, and moving, take vital signs, and report changes to the nursing staff.',
+      specifics:['Certified Nursing Assistant, Hospital','Certified Nursing Assistant, Nursing Home','Home Health Aide'] },
+    { name:'Nurse Anesthetists', desc:'Administer anesthesia and monitor patients’ vital signs before, during, and after surgery or other procedures, and oversee recovery from anesthesia.',
+      specifics:['Certified Registered Nurse Anesthetist, Surgical','Obstetric Nurse Anesthetist','Pain Management Nurse Anesthetist'] },
+    { name:'Nurse Midwives', desc:'Provide prenatal, delivery, and postpartum care, family planning, and gynecological services.',
+      specifics:['Certified Nurse-Midwife, Hospital','Birth Center Nurse-Midwife','Community Nurse-Midwife'] },
+    { name:'Medical and Health Services Managers', desc:'Plan, direct, and coordinate the operations of a healthcare facility, department, or clinical service.',
+      specifics:['Nursing Home Administrator','Clinical Department Manager','Health Information Manager'] },
+    { name:'Clinical Nurse Specialists', desc:'Provide expert clinical care in a specialty and improve practice and outcomes across a unit or facility.',
+      specifics:['Adult Health Clinical Nurse Specialist','Pediatric Clinical Nurse Specialist','Critical Care Clinical Nurse Specialist'] },
+    { name:'Home Health and Personal Care Aides', desc:'Help people with disabilities, chronic illness, or age-related needs in their own homes.',
+      specifics:['Home Health Aide','Personal Care Aide','Hospice Aide'] },
+    { name:'Medical Assistants', desc:'Complete administrative and clinical tasks in clinics and physicians’ offices, such as taking histories and assisting with exams.',
+      specifics:['Clinical Medical Assistant','Administrative Medical Assistant','Specialty Medical Assistant'] },
+    { name:'Health Specialties Teachers, Postsecondary', desc:'Teach courses in health specialties at the college level, such as public health, pharmacy, or therapy.',
+      specifics:['Public Health Faculty','Allied Health Instructor','Clinical Skills Instructor'] },
+    { name:'Psychiatric Technicians and Aides', desc:'Care for people with mental illness or developmental disabilities and help with daily activities and treatment plans.',
+      specifics:['Psychiatric Technician','Psychiatric Aide','Behavioral Health Technician'] },
+    { name:'Patient Care Coordinators', desc:'Organize and connect a patient’s care across providers, appointments, and services.',
+      specifics:['Care Coordinator, Primary Care','Discharge Planner','Chronic Care Coordinator'] },
+    { name:'Community Health Workers', desc:'Connect people to health and social services and provide education and basic support in the community.',
+      specifics:['Outreach Health Worker','Health Educator','Community Wellness Advocate'] }
+  ];
+  var TOTAL = 312;
+
+  var st = { step:'search', query:'Nurse', gi:null, si:null, history:[], manual:false, reveal:false, genPage:0, specPage:0 };
+  var flowEl = document.getElementById('flow');
+
+  var PAGE = 8;
+  function genPages(){ return Math.max(1, Math.ceil(GENERAL.length / PAGE)); }
+  function specPages(){ return st.gi!=null ? Math.max(1, Math.ceil(GENERAL[st.gi].specifics.length / PAGE)) : 1; }
+  function clampPage(p, n){ return Math.max(0, Math.min(p, n-1)); }
+  function pager(kind, page, pages){
+    if (pages <= 1) return '';
+    return '<div class="ms2-pager"><span class="ms2-pager-info">Page <b>'+(page+1)+'</b> of '+pages+'</span>'
+      + '<div class="ms2-pager-ctrls">'
+      + '<button class="ms2-pgbtn" data-pg="'+kind+'" data-dir="-1"'+(page<=0?' disabled':'')+'>'+S.back+'Prev</button>'
+      + '<button class="ms2-pgbtn" data-pg="'+kind+'" data-dir="1"'+(page>=pages-1?' disabled':'')+'>Next'+S.chev+'</button>'
+      + '</div></div>';
+  }
+
+  // ---- templates --------------------------------------------------------
+  function searchPanel(){
+    var results = (st.step === 'results');
+    var proceed = results ? '<button class="ms2-btn ms2-btn--primary" id="proceedBtn">Show me what you found'+S.arrow+'</button>' : '';
+    var notice = results
+      ? '<div class="ms2-found"><div class="ms2-found-ico">'+S.info+'</div>'
+        + '<div class="ms2-found-text"><b>'+TOTAL+'</b> occupations match “'+esc(st.query)+'” — far too many to scroll. We'+"'"+'ve grouped them into <b>'+GENERAL.length+'</b> categories so you can narrow in two quick steps.</div>'+proceed+'</div>'
+      : '';
+    return '<section class="ms2-search"><div class="ms2-search-label">My job is a(n)…</div>'
+      + '<div class="ms2-search-row">'
+      + '<div class="ms2-searchfield">'+S.search+'<input id="q" type="text" value="'+esc(st.query)+'" placeholder="e.g. nurse, line cook, welder" /></div>'
+      + '<button class="ms2-btn ms2-btn--primary" id="searchBtn">'+S.search+'Search</button></div>'
+      + (st.step==='search' ? '<p class="ms2-search-hint">Type how you'+"'"+'d say it out loud — even roughly. We'+"'"+'ll do the matching.</p>' : '')
+      + notice + '</section>';
+  }
+
+  function pathBar(){
+    var gen = (st.gi!=null) ? GENERAL[st.gi].name : null;
+    var spec = (st.si!=null) ? GENERAL[st.gi].specifics[st.si] : null;
+    var arrow = '<span class="ms2-path-arrow">'+S.chev+'</span>';
+    return '<div class="ms2-path"><span class="ms2-path-ico">'+S.funnel+'</span>'
+      + '<span class="ms2-path-seg ms2-path-seg--start" title="'+esc(st.query)+'">“'+esc(st.query)+'”</span>'+arrow
+      + '<span class="ms2-path-seg'+(gen?'':' ms2-path-seg--pending')+'"'+(gen?' title="'+esc(gen)+'"':'')+'>'+(gen?esc(gen):'Category')+'</span>'+arrow
+      + '<span class="ms2-path-seg'+(spec?' ms2-path-seg--dest':' ms2-path-seg--pending')+'"'+(spec?' title="'+esc(spec)+'"':'')+'>'+(spec?esc(spec):'Occupation')+'</span>'
+    + '</div>';
+  }
+
+  function explorePanel(){
+    if (!st.history.length) return '';
+    var chips = st.history.map(function(gi){
+      var active = (gi === st.gi) ? ' is-active' : '';
+      return '<button class="ms2-histchip'+active+'" data-jump="'+gi+'" title="'+esc(GENERAL[gi].name)+'">'
+        + '<span class="ms2-histchip-ic">'+S.jump+'</span><span class="ms2-histchip-tx">'+esc(GENERAL[gi].name)+'</span></button>';
+    }).join('');
+    return '<section class="ms2-explore"><div class="ms2-explore-head"><div class="ms2-explore-ic">'+S.hist+'</div>'
+      + '<div><div class="ms2-explore-title">Recently explored — '+st.history.length+'</div>'
+      + '<div class="ms2-explore-hint">Jump back to anything you'+"'"+'ve looked at. Exploring never loses your place.</div></div></div>'
+      + '<div class="ms2-hist-row">'+chips+'</div></section>';
+  }
+
+  function optCard(label, selected, kind, idx){
+    return '<button class="ms2-opt'+(selected?' is-selected':'')+'" data-'+kind+'="'+idx+'" title="'+esc(label)+'">'
+      + '<span class="ms2-opt-check">'+S.check+'</span><span class="ms2-opt-label">'+esc(label)+'</span></button>';
+  }
+
+  function generalPanel(){
+    var pages = genPages(), start = st.genPage*PAGE;
+    var cards = GENERAL.slice(start, start+PAGE).map(function(g,j){ var i=start+j; return optCard(g.name, st.gi===i, 'gi', i); }).join('');
+    var desc = (st.gi!=null)
+      ? '<div class="ms2-desc'+(st.reveal?' ms2-reveal':'')+'"><b>'+esc(GENERAL[st.gi].name)+'.</b> <span>'+esc(GENERAL[st.gi].desc)+'</span></div>' : '';
+    return '<section class="ms2-step"><div class="ms2-step-head"><div class="ms2-stepnum">1</div>'
+      + '<div class="ms2-step-title">General occupation</div><span class="ms2-step-count">'+GENERAL.length+' total</span></div>'
+      + '<p class="ms2-step-hint">First, pick the one that <b>describes how you work</b>.</p>'
+      + '<div class="ms2-opts">'+cards+'</div>'+pager('gen', st.genPage, pages)+desc+'</section>';
+  }
+
+  function specificPanel(){
+    var g = GENERAL[st.gi], pages = specPages(), start = st.specPage*PAGE;
+    var cards = g.specifics.slice(start, start+PAGE).map(function(s,j){ var i=start+j; return optCard(s, st.si===i, 'si', i); }).join('');
+    return '<section class="ms2-step'+(st.reveal?' ms2-reveal':'')+'"><div class="ms2-step-head"><div class="ms2-stepnum">2</div>'
+      + '<div class="ms2-step-title">Specific occupation</div><span class="ms2-step-count">'+g.specifics.length+' total</span></div>'
+      + '<p class="ms2-step-hint">Then, pick the <b>best match</b> within <b>'+esc(g.name)+'</b>.</p>'
+      + '<div class="ms2-opts">'+cards+'</div>'+pager('spec', st.specPage, pages)+'</section>';
+  }
+
+  function manualPanel(){
+    return '<section class="ms2-step"><div class="ms2-step-head"><div class="ms2-stepnum">'+S.info+'</div>'
+      + '<div class="ms2-step-title">Describe it in your own words</div></div>'
+      + '<p class="ms2-step-hint">Can'+"'"+'t find a match in the list? Type the job as you'+"'"+'d say it and we'+"'"+'ll record it for a coder to review.</p>'
+      + '<div class="ms2-manual"><input id="manualInput" type="text" placeholder="e.g. travelling dialysis nurse" value="'+esc(st.query)+'" /></div>'
+      + '<div class="ms2-actions" style="margin-top:16px"><button class="ms2-btn" id="cantBtn">'+S.back+'Back to the list</button>'
+      + '<div class="spacer"></div><button class="ms2-btn ms2-btn--primary" id="manualDone">'+S.check+'Use this</button></div></section>';
+  }
+
+  function actionRow(){
+    var done = st.si != null;
+    return '<div class="ms2-actions"><button class="ms2-btn" id="cantBtn">'+S.info+'Help, I can'+"'"+'t find it</button>'
+      + '<div class="spacer"></div>'
+      + '<button class="ms2-btn ms2-btn--primary" id="doneBtn"'+(done?'':' disabled')+'>'+S.check+'I'+"'"+'m done</button></div>';
+  }
+
+  function confirmPanel(){
+    var manual = (st.gi==null);
+    var occ = manual ? st.query : GENERAL[st.gi].specifics[st.si];
+    var gen = manual ? 'Entered in your own words' : GENERAL[st.gi].name;
+    var desc = manual ? 'We'+"'"+'ll flag this for a coder to review and classify.' : GENERAL[st.gi].desc;
+    return '<section class="ms2-panel"><span class="ms2-panel-tag">'+S.check+'Review your selection</span>'
+      + '<div class="ms2-pick-occ">'+esc(occ)+'</div>'
+      + '<p class="ms2-pick-gen">'+(manual?'':'in ')+'<b>'+esc(gen)+'</b></p>'
+      + '<div class="ms2-pick-desc">'+esc(desc)+'</div>'
+      + '<div class="ms2-panel-foot"><button class="ms2-btn ms2-btn--primary" id="confirmBtn">'+S.check+'Confirm &amp; save</button>'
+      + '<button class="ms2-ghost" id="backBtn">'+(manual?'Back to search':'Back to choices')+'</button></div></section>';
+  }
+
+  function donePanel(){
+    var manual = (st.gi==null);
+    var occ = manual ? st.query : GENERAL[st.gi].specifics[st.si];
+    var gen = manual ? '' : ' · '+GENERAL[st.gi].name;
+    return '<section class="ms2-panel"><div class="ms2-success-ico">'+S.check+'</div>'
+      + '<div class="ms2-pick-occ">Saved.</div>'
+      + '<p class="ms2-pick-gen"><b>'+esc(occ)+'</b>'+esc(gen)+' has been added to this job.</p>'
+      + '<div class="ms2-panel-foot"><button class="ms2-btn ms2-btn--primary" id="restartBtn">'+S.arrow+'Find another</button>'
+      + '<button class="ms2-ghost" id="reviewBtn">Edit selection</button></div></section>';
+  }
+
+  // ---- render -----------------------------------------------------------
+  function render(){
+    var html = '';
+    if (st.step === 'confirm'){ html = confirmPanel(); }
+    else if (st.step === 'done'){ html = donePanel(); }
+    else {
+      html += searchPanel();
+      if (st.step === 'browse'){
+        html += '<div class="ms2-choose">';
+        if (st.manual){ html += manualPanel(); }
+        else {
+          html += pathBar();
+          html += explorePanel();
+          html += generalPanel();
+          if (st.gi != null) html += specificPanel();
+          html += actionRow();
+        }
+        html += '</div>';
+      }
+    }
+    flowEl.innerHTML = html;
+    wire();
+  }
+
+  function readQuery(){ var q = document.getElementById('q'); if (q) st.query = q.value.trim(); }
+  function doSearch(){ readQuery(); var q = document.getElementById('q'); if (!st.query){ if (q) q.focus(); return; } st.step = 'results'; render(); }
+
+  function wire(){
+    bind('searchBtn','click', doSearch);
+    var q = document.getElementById('q');
+    if (q) q.addEventListener('keydown', function(e){ if (e.key==='Enter') doSearch(); });
+    bind('proceedBtn','click', function(){ st.step='browse'; st.genPage=0; render(); });
+    bind('cantBtn','click', function(){ st.manual=!st.manual; render(); });
+    bind('doneBtn','click', function(){ if (st.si!=null){ st.step='confirm'; render(); } });
+    bind('manualDone','click', function(){ var mi=document.getElementById('manualInput'); if (!mi||!mi.value.trim()){ if(mi) mi.focus(); return; } st.query=mi.value.trim(); st.gi=null; st.si=null; st.step='confirm'; render(); });
+    bind('confirmBtn','click', function(){ st.step='done'; render(); });
+    bind('backBtn','click', function(){ st.step=(st.gi==null)?'search':'browse'; if (st.gi==null){ st.manual=false; } render(); });
+    bind('restartBtn','click', function(){ st={ step:'search', query:'', gi:null, si:null, history:[], manual:false, reveal:false, genPage:0, specPage:0 }; render(); });
+    bind('reviewBtn','click', function(){ st.step='browse'; render(); });
+
+    flowEl.querySelectorAll('[data-gi]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var i=+el.getAttribute('data-gi'); st.gi=i; st.si=null; st.reveal=true; st.specPage=0;
+        if (st.history.indexOf(i)===-1) st.history.push(i);
+        render();
+        var sp = flowEl.querySelectorAll('.ms2-step')[1];
+        if (sp) sp.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      });
+    });
+    flowEl.querySelectorAll('[data-si]').forEach(function(el){
+      el.addEventListener('click', function(){ st.si=+el.getAttribute('data-si'); st.reveal=false; render(); });
+    });
+    flowEl.querySelectorAll('[data-jump]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var gi=+el.getAttribute('data-jump'); st.gi=gi; st.si=null; st.reveal=true; st.specPage=0;
+        st.genPage = Math.floor(gi / PAGE);                    // open the page that holds this category
+        render();
+        var sel = flowEl.querySelectorAll('.ms2-step')[0].querySelector('.ms2-opt.is-selected');
+        if (sel) sel.scrollIntoView({ behavior:'smooth', block:'center' });   // reveal the now-highlighted card
+      });
+    });
+    flowEl.querySelectorAll('[data-pg]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var kind=el.getAttribute('data-pg'), dir=+el.getAttribute('data-dir'); st.reveal=false;
+        if (kind==='gen') st.genPage=clampPage(st.genPage+dir, genPages());
+        else st.specPage=clampPage(st.specPage+dir, specPages());
+        render();
+      });
+    });
+  }
+  function bind(id, ev, fn){ var el=document.getElementById(id); if (el) el.addEventListener(ev, fn); }
+
+  render();
+})();
+</script>
+</body>
+</html>
