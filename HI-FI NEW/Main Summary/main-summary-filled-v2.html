@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ODH · Main Summary — Filled (any-order, adaptive)</title>
+
+<link rel="stylesheet" href="../../design-kit/tokens.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     MAIN SUMMARY — FILLED state. Same system + type as the empty
+     "any order" take; adds the adaptive-footprint answer:
+     - light sections stay compact even when filled
+     - the rich section (Work History) summarizes to one row per job
+     - any job row EXPANDS in place to full detail (full real estate
+       on demand, instead of always-on sprawl).
+     ============================================================ */
+
+  :root {
+    --ms2-display: 'Cal Sans', 'Sora', system-ui, sans-serif;
+    --ms2-body:    'DM Sans', system-ui, sans-serif;
+    --ms2-mono:    'DM Mono', ui-monospace, monospace;
+    --ms2-text-strong: #3b3d44;
+    --ms2-text-soft:   #595b63;
+    --ms2-chip-border: #bcbdc6;   /* darker than border-strong so chips stand out */
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    font-family: var(--ms2-body); font-size: 17px; line-height: 1.55; color: var(--text);
+    min-height: 100vh; background: var(--bg-fog), var(--bg);
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
+  svg { display: block; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  summary { list-style: none; } summary::-webkit-details-marker { display: none; }
+
+  /* ---- App bar ------------------------------------------------- */
+  .ms2-bar {
+    position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.7);
+    backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid rgba(19,19,24,.07);
+  }
+  .ms2-bar-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 30px; height: 66px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .ms2-brand { display: flex; align-items: center; gap: 11px; }
+  .ms2-mark {
+    width: 32px; height: 32px; border-radius: 9px; background: var(--grad); display: grid; place-items: center;
+    box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--action) 55%, transparent);
+  }
+  .ms2-wordmark { font-family: var(--ms2-display); font-size: 22px; letter-spacing: .01em; color: var(--text); }
+  .ms2-bar-right { display: flex; align-items: center; gap: 14px; }
+  .ms2-help {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 15px; color: var(--ms2-text-soft);
+    font-weight: 500; padding: 8px 10px; border-radius: 9px; transition: background .15s var(--ease), color .15s var(--ease);
+  }
+  .ms2-help:hover { background: var(--surface-sunk); color: var(--text); }
+  .ms2-help svg { width: 17px; height: 17px; }
+  .ms2-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--text); color: #fff;
+    display: grid; place-items: center; font-size: 13px; font-weight: 600; letter-spacing: .02em;
+  }
+
+  /* ---- Page shell --------------------------------------------- */
+  .ms2-page { max-width: 1200px; margin: 0 auto; padding: 54px 30px 92px; }
+  .ms2-eyebrow {
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .18em;
+    font-weight: 600; font-size: 13px; color: var(--ms2-text-soft); margin-bottom: 16px;
+  }
+  .ms2-h1 { font-family: var(--ms2-display); font-weight: 400; font-size: 58px; line-height: .98;
+    letter-spacing: -.01em; color: var(--text); }
+  .ms2-lede { font-size: 19px; line-height: 1.55; color: var(--ms2-text-strong); max-width: 58ch; margin-top: 18px; }
+  .ms2-lede b { color: var(--text); font-weight: 600; }
+
+  /* shared buttons / links --------------------------------------- */
+  .ms2-btn {
+    display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 17px; border-radius: 10px;
+    border: 1px solid var(--text-faint); background: var(--surface-sunk); color: var(--text);
+    font-family: var(--ms2-body); font-size: 15px; font-weight: 600;
+    transition: background .15s var(--ease), border-color .15s var(--ease);
+  }
+  .ms2-btn:hover { background: color-mix(in srgb, var(--surface-sunk) 88%, var(--text)); border-color: var(--text-muted); }
+  .ms2-btn svg { width: 16px; height: 16px; }
+  .ms2-btn--ghost { background: transparent; border-color: transparent; color: var(--ms2-text-soft); }
+  .ms2-btn--ghost:hover { background: var(--surface-sunk); color: var(--text); border-color: transparent; }
+  .ms2-learn {
+    display: inline-flex; align-items: center; gap: 5px; color: var(--accent); font-size: 15px; font-weight: 600;
+    transition: color .15s var(--ease);
+  }
+  .ms2-learn:hover { color: var(--accent-hover); text-decoration: underline; }
+  .ms2-learn svg { width: 15px; height: 15px; }
+
+  /* ============================================================
+     ANCHOR — Work History, filled. Calmer than the empty prompt
+     (requirement satisfied), but still the most important section.
+     ============================================================ */
+  .ms2-anchor {
+    position: relative; margin-top: 34px; overflow: hidden; border-radius: 22px;
+    background:
+      radial-gradient(680px 200px at 0% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 64%),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+    box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--action) 16%, transparent),
+                0 26px 54px -34px color-mix(in srgb, var(--action) 30%, transparent);
+  }
+  .ms2-anchor::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad-action); }
+  .ms2-anchor-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+    padding: 26px 32px 20px 36px; border-bottom: 1px solid var(--border);
+  }
+  .ms2-anchor-titles { display: flex; align-items: baseline; gap: 13px; flex-wrap: wrap; }
+  .ms2-anchor-title { font-family: var(--ms2-display); font-weight: 400; font-size: 29px; letter-spacing: -.01em; color: var(--text); }
+  .ms2-count { font-size: 15px; color: var(--ms2-text-soft); font-weight: 600; }
+  .ms2-captured {
+    display: inline-flex; align-items: center; gap: 7px; font-family: var(--ms2-body);
+    text-transform: uppercase; letter-spacing: .1em; font-weight: 700; font-size: 12px; color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent); padding: 6px 12px 6px 9px; border-radius: 999px;
+  }
+  .ms2-captured svg { width: 15px; height: 15px; }
+  .ms2-anchor-actions { display: flex; align-items: center; gap: 12px; }
+
+  /* job list — one row per job, expands in place ---------------- */
+  .ms2-joblist { display: flex; flex-direction: column; }
+  .ms2-job { border-bottom: 1px solid var(--border); }
+  .ms2-job:last-child { border-bottom: 0; }
+  .ms2-job-head {
+    display: grid; grid-template-columns: auto 1fr auto auto; align-items: start; gap: 16px;
+    padding: 20px 32px 20px 36px; cursor: pointer; transition: background .12s var(--ease);
+  }
+  .ms2-job-head:hover { background: var(--surface-2); }
+  .ms2-job-caret { color: var(--text-faint); transition: transform .18s var(--ease); margin-top: 3px; }
+  .ms2-job-caret svg { width: 17px; height: 17px; }
+  .ms2-job[open] .ms2-job-caret { transform: rotate(90deg); color: var(--text-muted); }
+  .ms2-job-id { min-width: 0; display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+  .ms2-job-occ { display: block; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.005em; }
+  .ms2-job-occ .ind { color: var(--ms2-text-soft); font-weight: 500; }
+  .ms2-job-dates { font-family: var(--ms2-mono); font-size: 14px; color: var(--ms2-text-soft); white-space: nowrap; margin-top: 2px; }
+  .ms2-now { display: inline-flex; align-items: center; gap: 6px; }
+  .ms2-now-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--action);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent); }
+  .ms2-job-edit { color: var(--ms2-text-soft); margin-top: 1px; }
+  .ms2-job-edit:hover { color: var(--accent); }
+  .ms2-job-edit svg { width: 17px; height: 17px; }
+
+  /* collapsed-only exposure preview — shown when the row is closed,
+     hidden when open (so it never duplicates the expanded chips) */
+  .ms2-collapsed-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ms2-collapsed-chips .ms2-chip { font-size: 13px; padding: 4px 11px; box-shadow: none; }
+  .ms2-job[open] .ms2-collapsed-chips { display: none; }
+
+  /* expanded detail — recessed panel (depth) + a clear spec hierarchy.
+     A sunk plane below the white summary row; facts read as real content
+     via type, chips lift as white pills off the recessed surface. */
+  .ms2-job-body { padding: 2px 32px 24px 36px; }
+  .ms2-detail {
+    background: #f3f3f4;                      /* warmer, gentler recess than the cool sunk grey */
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 22px;
+    box-shadow: inset 0 1px 2px rgba(19,19,24,.04);
+  }
+  .ms2-detail-meta {
+    display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 22px;
+    padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border-strong);
+  }
+  .ms2-dk {
+    display: block; font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .1em;
+    font-weight: 600; font-size: 11.5px; color: var(--ms2-text-soft); margin-bottom: 6px;
+  }
+  .ms2-dv { display: block; font-size: 16px; color: var(--text); font-weight: 500; }
+  .ms2-detail-block + .ms2-detail-block { margin-top: 15px; }
+  .ms2-detail-block .ms2-dv { font-weight: 400; color: var(--ms2-text-strong); line-height: 1.5; }
+  .ms2-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .ms2-chip {
+    font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface); border: 1px solid var(--ms2-chip-border);
+    padding: 6px 13px; border-radius: 999px; box-shadow: 0 1px 2px rgba(19,19,24,.05);
+  }
+
+  /* ============================================================
+     OPTIONAL grid — light sections stay compact, filled or empty.
+     ============================================================ */
+  .ms2-optional-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 46px 0 18px; }
+  .ms2-optional-title {
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .16em;
+    font-weight: 700; font-size: 13.5px; color: var(--ms2-text-strong);
+  }
+  .ms2-optional-hint { font-size: 15.5px; color: var(--ms2-text-soft); }
+  .ms2-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+  .ms2-card {
+    display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px 24px 18px; box-shadow: var(--shadow-card);
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease), transform .12s var(--ease);
+  }
+  .ms2-card:hover { border-color: var(--border-strong); transform: translateY(-2px);
+    box-shadow: 0 14px 34px -20px rgba(19,19,24,.24); }
+  .ms2-tagrow { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; }
+  .ms2-pill {
+    display: inline-flex; align-items: center;
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .1em; font-weight: 600;
+    font-size: 12px; color: var(--ms2-text-soft); background: var(--surface-sunk);
+    border: 1px solid var(--border); padding: 5px 11px; border-radius: 999px;
+  }
+  .ms2-pill--added { gap: 5px; color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); border-color: transparent; }
+  .ms2-pill--added svg { width: 13px; height: 13px; }
+  .ms2-card-name { font-family: var(--ms2-display); font-weight: 400; font-size: 23px; line-height: 1.12;
+    letter-spacing: -.005em; color: var(--text); }
+  .ms2-card-desc { font-size: 16px; line-height: 1.5; color: var(--ms2-text-soft); margin-top: 8px; flex: 1 1 auto; }
+  .ms2-card-summary { font-size: 16px; line-height: 1.5; color: var(--ms2-text-strong); margin-top: 9px; flex: 1 1 auto; }
+  .ms2-card-summary b { color: var(--text); font-weight: 700; }
+  .ms2-people { display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; }
+  .ms2-person {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--ms2-text-strong);
+    background: var(--surface-sunk); border: 1px solid var(--border); padding: 5px 11px 5px 5px; border-radius: 999px;
+  }
+  .ms2-person-av { width: 20px; height: 20px; border-radius: 50%; background: var(--text); color: #fff;
+    display: grid; place-items: center; font-size: 10px; font-weight: 700; }
+  .ms2-card-foot { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .ms2-card-foot .ms2-learn { margin-left: auto; }
+
+  /* closing "you're set" cell ----------------------------------- */
+  .ms2-done {
+    display: flex; flex-direction: column; justify-content: center; border: 1px dashed color-mix(in srgb, var(--accent) 32%, var(--border-strong));
+    border-radius: 16px; padding: 24px; background: color-mix(in srgb, var(--accent) 4%, transparent);
+  }
+  .ms2-done-icon { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); margin-bottom: 12px; }
+  .ms2-done-icon svg { width: 18px; height: 18px; }
+  .ms2-done-title { font-family: var(--ms2-display); font-weight: 400; font-size: 20px; color: var(--text); }
+  .ms2-done-text { font-size: 15px; line-height: 1.5; color: var(--ms2-text-soft); margin-top: 6px; }
+
+  .ms2-foot { display: flex; align-items: center; gap: 9px; margin-top: 32px; font-size: 15px; color: var(--ms2-text-soft); }
+  .ms2-foot svg { width: 17px; height: 17px; }
+
+  @media (max-width: 920px) {
+    .ms2-h1 { font-size: 44px; }
+    .ms2-grid { grid-template-columns: repeat(2, 1fr); }
+    .ms2-detail-meta { grid-template-columns: 1fr; gap: 14px; }
+    .ms2-job-head { grid-template-columns: auto 1fr auto; }
+    .ms2-job-edit { display: none; }
+  }
+  @media (max-width: 560px) {
+    .ms2-grid { grid-template-columns: 1fr; }
+    .ms2-page { padding: 38px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="ms2-bar">
+  <div class="ms2-bar-inner">
+    <div class="ms2-brand">
+      <div class="ms2-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+      </div>
+      <span class="ms2-wordmark">ODH</span>
+    </div>
+    <div class="ms2-bar-right">
+      <a class="ms2-help" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 2-2.6 2.5-2.6 2.5"/><path d="M12 17h.01"/></svg>
+        How this works
+      </a>
+      <div class="ms2-avatar" title="Patient">PT</div>
+    </div>
+  </div>
+</header>
+
+<main class="ms2-page">
+
+  <div>
+    <div class="ms2-eyebrow">Occupational Data for Health</div>
+    <h1 class="ms2-h1">Your work, so far.</h1>
+    <p class="ms2-lede">Here's everything you've added. Open any job for the full details, edit anything,
+      or add more — but your occupation's in, so <b>you're already all set</b>.</p>
+  </div>
+
+  <!-- ANCHOR: Work History, filled — summarized to one row per job -->
+  <section class="ms2-anchor" aria-labelledby="ms2-wh-title">
+    <div class="ms2-anchor-head">
+      <div class="ms2-anchor-titles">
+        <span class="ms2-captured">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Occupation captured
+        </span>
+        <h2 class="ms2-anchor-title" id="ms2-wh-title">Work history</h2>
+        <span class="ms2-count">3 jobs</span>
+      </div>
+      <div class="ms2-anchor-actions">
+        <a class="ms2-learn" href="#">Learn more</a>
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add another job
+        </button>
+      </div>
+    </div>
+
+    <div class="ms2-joblist">
+
+      <!-- job 1: open (full real estate, on demand) -->
+      <details class="ms2-job" open>
+        <summary class="ms2-job-head">
+          <span class="ms2-job-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          <span class="ms2-job-id">
+            <span class="ms2-job-occ">Crew Foreman Supervisor <span class="ind">· Highway Road Construction</span></span>
+            <span class="ms2-collapsed-chips">
+              <span class="ms2-chip">Asphalt fumes</span><span class="ms2-chip">Drunk drivers</span>
+              <span class="ms2-chip">Cold weather</span><span class="ms2-chip">Long hours</span>
+            </span>
+          </span>
+          <span class="ms2-job-dates ms2-now"><span class="ms2-now-dot"></span>2016 – Now</span>
+          <a class="ms2-job-edit" href="#" aria-label="Edit job">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </a>
+        </summary>
+        <div class="ms2-job-body">
+          <div class="ms2-detail">
+            <div class="ms2-detail-meta">
+              <div><span class="ms2-dk">Employer</span><span class="ms2-dv">Slow &amp; Sober Building Guys</span></div>
+              <div><span class="ms2-dk">Schedule</span><span class="ms2-dv">Daytime</span></div>
+              <div><span class="ms2-dk">Time</span><span class="ms2-dv">5 hrs/day · 4 days/week</span></div>
+            </div>
+            <div class="ms2-detail-block">
+              <span class="ms2-dk">Main duties</span>
+              <span class="ms2-dv">Building highways, paving roads, standing and holding a stop sign.</span>
+            </div>
+            <div class="ms2-detail-block">
+              <span class="ms2-dk">May be exposed to</span>
+              <div class="ms2-chips">
+                <span class="ms2-chip">Asphalt fumes</span>
+                <span class="ms2-chip">Drunk drivers</span>
+                <span class="ms2-chip">Cold weather</span>
+                <span class="ms2-chip">Long hours</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- job 2: collapsed (one row + exposure preview) -->
+      <details class="ms2-job">
+        <summary class="ms2-job-head">
+          <span class="ms2-job-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          <span class="ms2-job-id">
+            <span class="ms2-job-occ">Line Cook <span class="ind">· Restaurants &amp; Food Service</span></span>
+            <span class="ms2-collapsed-chips">
+              <span class="ms2-chip">Heat &amp; steam</span><span class="ms2-chip">Sharp tools</span>
+              <span class="ms2-chip">Grease</span><span class="ms2-chip">Long shifts</span>
+            </span>
+          </span>
+          <span class="ms2-job-dates">2012 – 2016</span>
+          <a class="ms2-job-edit" href="#" aria-label="Edit job">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </a>
+        </summary>
+        <div class="ms2-job-body">
+          <div class="ms2-detail">
+            <div class="ms2-detail-meta">
+              <div><span class="ms2-dk">Employer</span><span class="ms2-dv">Cendric's Diner</span></div>
+              <div><span class="ms2-dk">Schedule</span><span class="ms2-dv">Evening</span></div>
+              <div><span class="ms2-dk">Time</span><span class="ms2-dv">8 hrs/day · 5 days/week</span></div>
+            </div>
+            <div class="ms2-detail-block">
+              <span class="ms2-dk">Main duties</span>
+              <span class="ms2-dv">Grilling, prep, dishwashing, closing the kitchen.</span>
+            </div>
+            <div class="ms2-detail-block">
+              <span class="ms2-dk">May be exposed to</span>
+              <div class="ms2-chips">
+                <span class="ms2-chip">Heat &amp; steam</span>
+                <span class="ms2-chip">Sharp tools</span>
+                <span class="ms2-chip">Grease</span>
+                <span class="ms2-chip">Long shifts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- job 3: collapsed -->
+      <details class="ms2-job">
+        <summary class="ms2-job-head">
+          <span class="ms2-job-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          <span class="ms2-job-id">
+            <span class="ms2-job-occ">Warehouse Picker <span class="ind">· Warehousing &amp; Storage</span></span>
+            <span class="ms2-collapsed-chips">
+              <span class="ms2-chip">Heavy lifting</span><span class="ms2-chip">Forklift traffic</span>
+              <span class="ms2-chip">Cold storage</span>
+            </span>
+          </span>
+          <span class="ms2-job-dates">2010 – 2012</span>
+          <a class="ms2-job-edit" href="#" aria-label="Edit job">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </a>
+        </summary>
+        <div class="ms2-job-body">
+          <div class="ms2-detail">
+            <div class="ms2-detail-meta">
+              <div><span class="ms2-dk">Employer</span><span class="ms2-dv">Peak Logistics</span></div>
+              <div><span class="ms2-dk">Schedule</span><span class="ms2-dv">Overnight</span></div>
+              <div><span class="ms2-dk">Time</span><span class="ms2-dv">10 hrs/day · 4 days/week</span></div>
+            </div>
+            <div class="ms2-detail-block">
+              <span class="ms2-dk">Main duties</span>
+              <span class="ms2-dv">Picking and packing orders, operating a pallet jack.</span>
+            </div>
+            <div class="ms2-detail-block">
+              <span class="ms2-dk">May be exposed to</span>
+              <div class="ms2-chips">
+                <span class="ms2-chip">Heavy lifting</span>
+                <span class="ms2-chip">Forklift traffic</span>
+                <span class="ms2-chip">Cold storage</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- OPTIONAL: light sections, compact whether filled or empty -->
+  <div class="ms2-optional-head">
+    <span class="ms2-optional-title">More about your work</span>
+    <span class="ms2-optional-hint">All optional — add, edit, or skip in any order.</span>
+  </div>
+
+  <div class="ms2-grid">
+
+    <!-- filled, compact: a sentence summary -->
+    <article class="ms2-card">
+      <div class="ms2-tagrow">
+        <span class="ms2-pill ms2-pill--added">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Added
+        </span>
+      </div>
+      <h3 class="ms2-card-name">Employment Status &amp; Retirement</h3>
+      <p class="ms2-card-summary"><b>Not in the labor force</b> · retired September 2018.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn ms2-btn--ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Edit
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <!-- filled, compact: a one-line job summary -->
+    <article class="ms2-card">
+      <div class="ms2-tagrow">
+        <span class="ms2-pill ms2-pill--added">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Added
+        </span>
+      </div>
+      <h3 class="ms2-card-name">Longest-Held Occupation</h3>
+      <p class="ms2-card-summary"><b>Crew Foreman Supervisor</b> · Highway Road Construction · 12 years.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn ms2-btn--ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Edit
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <!-- empty, compact -->
+    <article class="ms2-card">
+      <div class="ms2-tagrow"><span class="ms2-pill">Optional</span></div>
+      <h3 class="ms2-card-name">Military Combat Zone</h3>
+      <p class="ms2-card-desc">Time served in a designated combat zone.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <!-- filled, compact: people chips -->
+    <article class="ms2-card">
+      <div class="ms2-tagrow">
+        <span class="ms2-pill ms2-pill--added">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Added
+        </span>
+      </div>
+      <h3 class="ms2-card-name">Household Members of a Minor</h3>
+      <div class="ms2-people">
+        <span class="ms2-person"><span class="ms2-person-av">M</span>Mary-Lou Jane</span>
+        <span class="ms2-person"><span class="ms2-person-av">L</span>Lauren</span>
+      </div>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn ms2-btn--ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Edit
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <!-- empty, compact -->
+    <article class="ms2-card">
+      <div class="ms2-tagrow"><span class="ms2-pill">Optional</span></div>
+      <h3 class="ms2-card-name">Volunteer Work</h3>
+      <p class="ms2-card-desc">Unpaid roles that still carry exposures.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <!-- closing: you're set -->
+    <div class="ms2-done">
+      <div class="ms2-done-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="ms2-done-title">You're all set</div>
+      <p class="ms2-done-text">Your occupation's in. Add anything else whenever you like — no rush.</p>
+    </div>
+
+  </div>
+
+  <div class="ms2-foot">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    Saved automatically as you go — stop and pick up where you left off anytime.
+  </div>
+
+</main>
+
+</body>
+</html>
