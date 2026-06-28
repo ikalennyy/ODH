@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ODH · Main Summary — Any order (modern take)</title>
+
+<!-- design-kit tokens only: we draw color/shape/shadow/density from the same
+     source of truth, but this version takes a fresh structure + type voice. -->
+<link rel="stylesheet" href="../../design-kit/tokens.css" />
+<!-- portfolio-aligned type: Cal Sans display · DM Sans body · DM Mono data -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     MAIN SUMMARY — "Any order" modern take.
+     Self-contained: draws on design-kit tokens (CSS vars) for the
+     ODH palette + shape + elevation, but ships its own structure
+     and type. Classes are ms2- prefixed to avoid any cascade ties
+     with components.css (not linked here).
+     ============================================================ */
+
+  :root {
+    --ms2-display: 'Cal Sans', 'Sora', system-ui, sans-serif;
+    --ms2-body:    'DM Sans', system-ui, sans-serif;
+    --ms2-mono:    'DM Mono', ui-monospace, monospace;
+    /* darker, higher-contrast greys than the kit's muted/faint, tuned by eye */
+    --ms2-text-strong: #3b3d44;  /* body, descriptions, ledes */
+    --ms2-text-soft:   #595b63;  /* labels, hints, footnotes */
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    font-family: var(--ms2-body);
+    font-size: 16px; line-height: 1.55; color: var(--text);
+    min-height: 100vh; background: var(--bg-fog), var(--bg);
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
+  svg { display: block; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  /* ---- App bar ------------------------------------------------- */
+  .ms2-bar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.7);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid rgba(19,19,24,.07);
+  }
+  .ms2-bar-inner {
+    max-width: 1080px; margin: 0 auto; padding: 0 28px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .ms2-brand { display: flex; align-items: center; gap: 11px; }
+  .ms2-mark {
+    width: 30px; height: 30px; border-radius: 9px; background: var(--grad);
+    display: grid; place-items: center;
+    box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--action) 55%, transparent);
+  }
+  .ms2-wordmark { font-family: var(--ms2-display); font-size: 20px; letter-spacing: .01em; color: var(--text); }
+  .ms2-bar-right { display: flex; align-items: center; gap: 14px; }
+  .ms2-help {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 14.5px; color: var(--ms2-text-soft); font-weight: 500;
+    padding: 8px 10px; border-radius: 9px; transition: background .15s var(--ease), color .15s var(--ease);
+  }
+  .ms2-help:hover { background: var(--surface-sunk); color: var(--text); }
+  .ms2-help svg { width: 16px; height: 16px; }
+  .ms2-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--text); color: #fff;
+    display: grid; place-items: center; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  }
+
+  /* ---- Page shell --------------------------------------------- */
+  .ms2-page { max-width: 1080px; margin: 0 auto; padding: 52px 28px 88px; }
+
+  .ms2-eyebrow {
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .18em;
+    font-weight: 600; font-size: 12px; color: var(--ms2-text-soft); margin-bottom: 16px;
+  }
+  .ms2-h1 {
+    font-family: var(--ms2-display); font-weight: 400; /* Cal Sans is display-weight by design */
+    font-size: 54px; line-height: .98; letter-spacing: -.01em; color: var(--text);
+  }
+  .ms2-lede {
+    font-size: 18px; line-height: 1.55; color: var(--ms2-text-strong);
+    max-width: 52ch; margin-top: 18px;
+  }
+  .ms2-lede b { color: var(--text); font-weight: 600; }
+
+  /* ---- The anchor: the one required thing --------------------- */
+  .ms2-anchor {
+    position: relative; margin-top: 38px; overflow: hidden;
+    border-radius: 22px;
+    background:
+      radial-gradient(680px 220px at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 64%),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+    box-shadow:
+      0 2px 6px -2px color-mix(in srgb, var(--action) 24%, transparent),
+      0 30px 60px -34px color-mix(in srgb, var(--action) 40%, transparent);
+  }
+  .ms2-anchor::before {            /* the blue accent spine — this is the "needed" signal */
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad-action);
+  }
+  .ms2-anchor-in {
+    display: grid; grid-template-columns: 1fr auto; gap: 36px; align-items: center;
+    padding: 34px 38px 34px 42px;
+  }
+  .ms2-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .12em;
+    font-weight: 700; font-size: 11.5px; color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .ms2-tag-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--action);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent);
+  }
+  .ms2-anchor-q { font-family: var(--ms2-display); font-weight: 400; font-size: 33px; line-height: 1.05;
+    letter-spacing: -.01em; color: var(--text); }
+  .ms2-anchor-sub { color: var(--ms2-text-strong); font-size: 16px; margin-top: 12px; max-width: 48ch; }
+  .ms2-anchor-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  .ms2-cta {
+    display: inline-flex; align-items: center; gap: 9px;
+    height: 50px; padding: 0 24px; border-radius: 12px;
+    background: var(--grad-action); color: #fff; font-family: var(--ms2-body);
+    font-size: 16px; font-weight: 600; white-space: nowrap;
+    box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--action) 60%, transparent);
+    transition: filter .15s var(--ease), transform .05s var(--ease);
+  }
+  .ms2-cta:hover { filter: brightness(1.07); }
+  .ms2-cta:active { transform: translateY(.5px); }
+  .ms2-cta svg { width: 18px; height: 18px; }
+  .ms2-anchor-note { font-size: 13px; color: var(--ms2-text-soft); max-width: 22ch; }
+
+  /* shared "Learn more" link — what the section is + why we ask */
+  .ms2-learn {
+    display: inline-flex; align-items: center; gap: 5px;
+    color: var(--accent); font-size: 14px; font-weight: 600;
+    transition: color .15s var(--ease);
+  }
+  .ms2-learn:hover { color: var(--accent-hover); text-decoration: underline; }
+  .ms2-learn svg { width: 14px; height: 14px; }
+  .ms2-anchor-learn { margin-top: 16px; }
+
+  /* ---- Optional context band ---------------------------------- */
+  .ms2-optional-head {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin: 46px 0 18px;
+  }
+  .ms2-optional-title {
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .16em;
+    font-weight: 700; font-size: 12.5px; color: var(--ms2-text-strong);
+  }
+  .ms2-optional-hint { font-size: 14.5px; color: var(--ms2-text-soft); }
+
+  .ms2-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+
+  .ms2-card {
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px 22px 18px; box-shadow: var(--shadow-card);
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease), transform .12s var(--ease);
+  }
+  .ms2-card:hover {
+    border-color: var(--border-strong); transform: translateY(-2px);
+    box-shadow: 0 14px 34px -20px rgba(19,19,24,.24);
+  }
+  .ms2-pill {
+    align-self: flex-start;
+    font-family: var(--ms2-body); text-transform: uppercase; letter-spacing: .1em;
+    font-weight: 600; font-size: 11px; color: var(--ms2-text-soft);
+    background: var(--surface-sunk); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 14px;
+  }
+  .ms2-card-name { font-family: var(--ms2-display); font-weight: 400; font-size: 22px; line-height: 1.1;
+    letter-spacing: -.005em; color: var(--text); }
+  .ms2-card-desc { font-size: 15px; line-height: 1.5; color: var(--ms2-text-strong); margin-top: 8px; flex: 1 1 auto; }
+  .ms2-card-foot {
+    display: flex; align-items: center; gap: 14px; margin-top: 18px; padding-top: 15px;
+    border-top: 1px solid var(--border);
+  }
+  .ms2-card-foot .ms2-learn { margin-left: auto; }
+  /* default state = the filled/bordered look surfaced from the old hover */
+  .ms2-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 40px; padding: 0 16px; border-radius: 10px;
+    border: 1px solid var(--text-faint); background: var(--surface-sunk);
+    color: var(--text); font-family: var(--ms2-body); font-size: 14px; font-weight: 600;
+    transition: background .15s var(--ease), border-color .15s var(--ease);
+  }
+  .ms2-btn:hover { background: color-mix(in srgb, var(--surface-sunk) 88%, var(--text)); border-color: var(--text-muted); }
+  .ms2-btn svg { width: 15px; height: 15px; }
+
+  /* the closing reassurance cell — fills the 6th grid slot, defuses any
+     "you must finish everything" pressure. Not a section: dashed + quiet. */
+  .ms2-done {
+    display: flex; flex-direction: column; justify-content: center;
+    border: 1px dashed var(--border-strong); border-radius: 16px;
+    padding: 22px; background: transparent;
+  }
+  .ms2-done-icon {
+    width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+    background: var(--surface-sunk); color: var(--ms2-text-soft); margin-bottom: 12px;
+  }
+  .ms2-done-icon svg { width: 17px; height: 17px; }
+  .ms2-done-title { font-family: var(--ms2-display); font-weight: 400; font-size: 18px; color: var(--text); }
+  .ms2-done-text { font-size: 14px; line-height: 1.5; color: var(--ms2-text-soft); margin-top: 6px; }
+
+  /* ---- Footer reassurance ------------------------------------- */
+  .ms2-foot {
+    display: flex; align-items: center; gap: 9px;
+    margin-top: 30px; font-size: 14px; color: var(--ms2-text-soft);
+  }
+  .ms2-foot svg { width: 16px; height: 16px; }
+
+  /* ---- Entrance motion (deliberate, single staggered reveal) --- */
+  @keyframes ms2-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .ms2-anim { opacity: 0; animation: ms2-rise .55s var(--ease) forwards; }
+  @media (prefers-reduced-motion: reduce) {
+    .ms2-anim { animation: none; opacity: 1; }
+    .ms2-card, .ms2-cta { transition: none; }
+  }
+
+  /* ---- Responsive --------------------------------------------- */
+  @media (max-width: 880px) {
+    .ms2-h1 { font-size: 40px; }
+    .ms2-anchor-in { grid-template-columns: 1fr; gap: 22px; align-items: start; }
+    .ms2-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .ms2-grid { grid-template-columns: 1fr; }
+    .ms2-page { padding: 36px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================ APP BAR ============================ -->
+<header class="ms2-bar">
+  <div class="ms2-bar-inner">
+    <div class="ms2-brand">
+      <div class="ms2-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+      </div>
+      <span class="ms2-wordmark">ODH</span>
+    </div>
+    <div class="ms2-bar-right">
+      <a class="ms2-help" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 2-2.6 2.5-2.6 2.5"/><path d="M12 17h.01"/></svg>
+        How this works
+      </a>
+      <div class="ms2-avatar" title="Patient">PT</div>
+    </div>
+  </div>
+</header>
+
+<main class="ms2-page">
+
+  <!-- header: set permission up front -->
+  <div class="ms2-anim">
+    <div class="ms2-eyebrow">Occupational Data for Health</div>
+    <h1 class="ms2-h1">Your work,<br>in any order.</h1>
+    <p class="ms2-lede">Add whatever applies — there's no set order and most of it's optional.
+      The one thing we really need is <b>what you do for a living</b>. You can stop and come back anytime.</p>
+  </div>
+
+  <!-- the anchor: the single required thing -->
+  <section class="ms2-anchor ms2-anim" style="animation-delay:.06s" aria-labelledby="ms2-anchor-q">
+    <div class="ms2-anchor-in">
+      <div>
+        <span class="ms2-tag"><span class="ms2-tag-dot"></span>The one part we need</span>
+        <h2 class="ms2-anchor-q" id="ms2-anchor-q">What do you do for work?</h2>
+        <p class="ms2-anchor-sub">Add a job and we'll help you land on the right industry and
+          occupation — even if you're not sure of the exact terms.</p>
+        <a class="ms2-learn ms2-anchor-learn" href="#">
+          Learn more — why we ask
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="ms2-anchor-cta">
+        <button class="ms2-cta">
+          Add a job
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+        <span class="ms2-anchor-note">Takes about a minute. Guided the whole way.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- optional context: any of these, in any order, or none -->
+  <div class="ms2-optional-head ms2-anim" style="animation-delay:.12s">
+    <span class="ms2-optional-title">Optional context</span>
+    <span class="ms2-optional-hint">Add any that apply, in any order — or skip them.</span>
+  </div>
+
+  <div class="ms2-grid">
+
+    <article class="ms2-card ms2-anim" style="animation-delay:.16s">
+      <span class="ms2-pill">Optional</span>
+      <h3 class="ms2-card-name">Employment Status &amp; Retirement</h3>
+      <p class="ms2-card-desc">Working now, retired, or somewhere in between.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <article class="ms2-card ms2-anim" style="animation-delay:.20s">
+      <span class="ms2-pill">Optional</span>
+      <h3 class="ms2-card-name">Longest-Held Occupation</h3>
+      <p class="ms2-card-desc">The job you've done the longest, if it's a different one.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <article class="ms2-card ms2-anim" style="animation-delay:.24s">
+      <span class="ms2-pill">Optional</span>
+      <h3 class="ms2-card-name">Military Combat Zone</h3>
+      <p class="ms2-card-desc">Time served in a designated combat zone.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <article class="ms2-card ms2-anim" style="animation-delay:.28s">
+      <span class="ms2-pill">Optional</span>
+      <h3 class="ms2-card-name">Volunteer Work</h3>
+      <p class="ms2-card-desc">Unpaid roles that still carry exposures.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <article class="ms2-card ms2-anim" style="animation-delay:.32s">
+      <span class="ms2-pill">Optional</span>
+      <h3 class="ms2-card-name">Household Members of a Minor</h3>
+      <p class="ms2-card-desc">For an adult filling this in on a child's behalf.</p>
+      <div class="ms2-card-foot">
+        <button class="ms2-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+        <a class="ms2-learn" href="#">Learn more</a>
+      </div>
+    </article>
+
+    <!-- closing note in the 6th slot: completeness never nags -->
+    <div class="ms2-done ms2-anim" style="animation-delay:.36s">
+      <div class="ms2-done-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="ms2-done-title">That's all we need</div>
+      <p class="ms2-done-text">Once your occupation's in, you're done. Anything else here is a bonus.</p>
+    </div>
+
+  </div>
+
+  <div class="ms2-foot ms2-anim" style="animation-delay:.40s">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    Saved automatically as you go — stop and pick up where you left off anytime.
+  </div>
+
+</main>
+
+</body>
+</html>

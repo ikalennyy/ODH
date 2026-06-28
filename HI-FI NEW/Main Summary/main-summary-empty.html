@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ODH · Main Summary — Empty</title>
+<link rel="stylesheet" href="../../design-kit/tokens.css" />
+<link rel="stylesheet" href="../../design-kit/components.css" />
+<style>
+  /* ============================================================
+     Screen-specific components — built ONLY from design-kit tokens.
+     (components.css is left untouched; this is intake-side furniture
+     the shared kit doesn't ship: section tab strip, status bar,
+     section cards.)
+     ============================================================ */
+
+  /* ---- Section tab strip (the 7 ODH sections) ------------------
+     The reskin of the old full-width teal tab bar. Sits under the
+     app bar; active tab carries the blue accent indicator. */
+  .subnav {
+    position: sticky; top: 66px; z-index: 40;
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: var(--bw) solid rgba(19,19,24,.07);
+  }
+  .subnav-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: 0 30px;
+    display: flex; gap: 2px; align-items: stretch;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .subnav-inner::-webkit-scrollbar { display: none; }
+  .subnav-link {
+    position: relative; white-space: nowrap;
+    padding: 14px 14px 15px; font-size: 13.5px; font-weight: 500;
+    color: var(--text-muted); transition: color .15s var(--ease);
+  }
+  .subnav-link:hover { color: var(--text); }
+  .subnav-link.is-active { color: var(--text); font-weight: 700; }
+  .subnav-link.is-active::after {
+    content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px;
+    height: 2px; background: var(--accent);
+  }
+
+  /* ---- Status / progress bar — the "sense of progress" focal row -- */
+  .statusbar {
+    display: flex; align-items: center; gap: 26px;
+    background: var(--surface);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 16px 22px; margin-bottom: 24px;
+  }
+  .statusbar-meta { display: flex; flex-direction: column; gap: 3px; }
+  .statusbar-meta .k {
+    font-family: var(--font-sans); text-transform: uppercase; letter-spacing: .11em;
+    font-weight: 600; font-size: 10.5px; color: var(--text-faint);
+  }
+  .statusbar-meta .v { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+  .statusbar-meta .v b {
+    font-family: var(--font-stat); font-weight: 700; color: var(--text);
+    font-size: 18px; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums lining-nums; margin-right: 1px;
+  }
+  .statusbar-track {
+    flex: 1 1 auto; max-width: 360px; height: 8px;
+    border-radius: var(--radius-pill); background: var(--surface-sunk); overflow: hidden;
+  }
+  .statusbar-fill { height: 100%; border-radius: var(--radius-pill); background: var(--grad-action); }
+  .statusbar-cta { margin-left: auto; }
+
+  /* ---- Section cards — one per ODH data area --------------------- */
+  .sections { display: flex; flex-direction: column; gap: var(--gap); }
+  .section-card {
+    position: relative; background: var(--surface);
+    border: var(--bw) solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-card); padding: 22px 24px;
+    transition: border-color .15s var(--ease), box-shadow .15s var(--ease), transform .12s var(--ease);
+  }
+  .section-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 12px 32px -18px rgba(19,19,24,.20);
+    transform: translateY(-1px);
+  }
+  .section-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+  .section-index {
+    font-family: var(--font-sans); text-transform: uppercase; letter-spacing: .14em;
+    font-weight: 600; font-size: 10.5px; color: var(--text-faint); margin-bottom: 9px;
+  }
+  .section-name {
+    font-family: var(--font-display); font-size: 21px; font-weight: 700;
+    letter-spacing: -.015em; line-height: 1.1; color: var(--text);
+  }
+  .section-desc { color: var(--text-muted); font-size: 14px; margin-top: 7px; max-width: 62ch; }
+  .learn { font-size: 13px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .learn:hover { color: var(--accent-hover); text-decoration: underline; }
+
+  .section-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin-top: 18px; padding-top: 16px; border-top: var(--bw) solid var(--border);
+  }
+  .section-state { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--text-faint); }
+  .section-state-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+
+  .appbar-help {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 38px; padding: 0 14px; border-radius: var(--radius-sm);
+    color: var(--text-muted); font-size: 13.5px; font-weight: 500;
+    transition: background .15s var(--ease), color .15s var(--ease);
+  }
+  .appbar-help:hover { background: var(--surface-sunk); color: var(--text); }
+  .appbar-help .icon { width: 16px; height: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ============================ APP BAR ============================ -->
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand">
+      <div class="brand-id">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+        </div>
+        <div class="brand-name">ODH</div>
+      </div>
+    </div>
+    <div class="appbar-right">
+      <a class="appbar-help" href="#">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 2-2.6 2.5-2.6 2.5"/><path d="M12 17h.01"/></svg>
+        How this works
+      </a>
+      <div class="avatar" title="Patient">PT</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== SECTION TAB STRIP ===================== -->
+<nav class="subnav" aria-label="Sections">
+  <div class="subnav-inner">
+    <a class="subnav-link is-active" href="#">Main Summary</a>
+    <a class="subnav-link" href="#">Employment Status &amp; Retirement</a>
+    <a class="subnav-link" href="#">Work History</a>
+    <a class="subnav-link" href="#">Longest Held Occupation</a>
+    <a class="subnav-link" href="#">Volunteer Work</a>
+    <a class="subnav-link" href="#">Military Combat Zone</a>
+    <a class="subnav-link" href="#">Household Members of Minors</a>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- page head -->
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">OCCUPATIONAL DATA FOR HEALTH</div>
+      <h1 class="page-title">Main summary</h1>
+      <p class="page-sub">Everything you add comes together here. Add the sections that apply to
+        you — you can stop and pick up where you left off anytime.</p>
+    </div>
+    <div class="page-head-meta">Prototype <b>v3.0</b></div>
+  </div>
+
+  <!-- status / progress -->
+  <div class="statusbar">
+    <div class="statusbar-meta">
+      <span class="k">Getting started</span>
+      <span class="v"><b>0</b> of 6 sections added</span>
+    </div>
+    <div class="statusbar-track"><div class="statusbar-fill" style="width:0%"></div></div>
+    <div class="statusbar-cta">
+      <button class="btn btn-primary">
+        Start with Work History
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- sections -->
+  <div class="sections">
+
+    <section class="section-card">
+      <div class="section-top">
+        <div>
+          <div class="section-index">Section 01</div>
+          <div class="section-name">Employment Status &amp; Retirement</div>
+          <p class="section-desc">Whether you're working now, and when you retired if you have.</p>
+        </div>
+        <a class="learn" href="#">Learn more</a>
+      </div>
+      <div class="section-foot">
+        <span class="section-state"><span class="section-state-dot"></span>Not added yet</span>
+        <button class="btn btn-sm">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-top">
+        <div>
+          <div class="section-index">Section 02</div>
+          <div class="section-name">Work History</div>
+          <p class="section-desc">The jobs you've held — what you did, your schedule, and what you may
+            have been exposed to.</p>
+        </div>
+        <a class="learn" href="#">Learn more</a>
+      </div>
+      <div class="section-foot">
+        <span class="section-state"><span class="section-state-dot"></span>Not added yet</span>
+        <button class="btn btn-sm">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-top">
+        <div>
+          <div class="section-index">Section 03</div>
+          <div class="section-name">Longest Held Occupation</div>
+          <p class="section-desc">The single job you've worked the longest.</p>
+        </div>
+        <a class="learn" href="#">Learn more</a>
+      </div>
+      <div class="section-foot">
+        <span class="section-state"><span class="section-state-dot"></span>Not added yet</span>
+        <button class="btn btn-sm">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-top">
+        <div>
+          <div class="section-index">Section 04</div>
+          <div class="section-name">Military Combat Zone</div>
+          <p class="section-desc">Any service in a designated combat zone.</p>
+        </div>
+        <a class="learn" href="#">Learn more</a>
+      </div>
+      <div class="section-foot">
+        <span class="section-state"><span class="section-state-dot"></span>Not added yet</span>
+        <button class="btn btn-sm">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-top">
+        <div>
+          <div class="section-index">Section 05</div>
+          <div class="section-name">Volunteer Work</div>
+          <p class="section-desc">Unpaid roles that may carry their own exposures.</p>
+        </div>
+        <a class="learn" href="#">Learn more</a>
+      </div>
+      <div class="section-foot">
+        <span class="section-state"><span class="section-state-dot"></span>Not added yet</span>
+        <button class="btn btn-sm">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-top">
+        <div>
+          <div class="section-index">Section 06</div>
+          <div class="section-name">Household Members of a Minor</div>
+          <p class="section-desc">Work information for the adults in a minor's household.</p>
+        </div>
+        <a class="learn" href="#">Learn more</a>
+      </div>
+      <div class="section-foot">
+        <span class="section-state"><span class="section-state-dot"></span>Not added yet</span>
+        <button class="btn btn-sm">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add
+        </button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>
