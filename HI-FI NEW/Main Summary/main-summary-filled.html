@@ -237,8 +237,8 @@
   .ms2-done-title { font-family: var(--ms2-display); font-weight: 400; font-size: 20px; color: var(--text); }
   .ms2-done-text { font-size: 15px; line-height: 1.5; color: var(--ms2-text-soft); margin-top: 6px; }
 
-  .ms2-foot { display: flex; align-items: center; gap: 9px; margin-top: 32px; font-size: 15px; color: var(--ms2-text-soft); }
-  .ms2-foot svg { width: 17px; height: 17px; }
+  .ms2-reassure { display: inline-flex; align-items: center; gap: 9px; margin-top: 18px; font-size: 15px; font-weight: 500; color: #474a52; }
+  .ms2-reassure svg { width: 17px; height: 17px; }
 
   @media (max-width: 920px) {
     .ms2-h1 { font-size: 44px; }
@@ -282,6 +282,11 @@
     <h1 class="ms2-h1">Your work, so far.</h1>
     <p class="ms2-lede">Here's everything you've added. Open any job for the full details, edit anything,
       or add more — but your occupation's in, so <b>you're already all set</b>.</p>
+    <div class="ms2-reassure">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      Saved automatically as you go — stop and pick up where you left off anytime.
+    </div>
   </div>
 
   <!-- ANCHOR: Work History, filled — summarized to one row per job -->
@@ -544,12 +549,6 @@
       <p class="ms2-done-text">Your occupation's in. Add anything else whenever you like — no rush.</p>
     </div>
 
-  </div>
-
-  <div class="ms2-foot">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-         stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-    Saved automatically as you go — stop and pick up where you left off anytime.
   </div>
 
 </main>
